@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from .models import CouncilMemo, DossierKind, DossierPart
+from .models import CouncilMemo, DossierKind, DossierPart, ReviewArtifact, ReviewArtifactKind
 
 
 @dataclass(frozen=True)
@@ -21,6 +21,11 @@ IDEA_LAYOUT = ArtifactLayout(
         DossierKind.next_steps: "NEXT_STEPS.md",
     }
 )
+
+REVIEW_LAYOUT = {
+    ReviewArtifactKind.referee_memo: "REFEREE_MEMO.md",
+    ReviewArtifactKind.revision_checklist: "REVISION_CHECKLIST.md",
+}
 
 
 def write_dossier_parts(
@@ -44,6 +49,17 @@ def write_council_memos(target_dir: Path, memos: Iterable[CouncilMemo]) -> None:
         safe_ref = memo.referee.replace(" ", "_")
         memo_path = target_dir / f"{safe_ref}.md"
         _write_markdown(memo_path, memo.content)
+
+
+def write_review_artifacts(
+    target_dir: Path,
+    artifacts: Iterable[ReviewArtifact],
+) -> None:
+    target_dir.mkdir(parents=True, exist_ok=True)
+    for artifact in artifacts:
+        filename = REVIEW_LAYOUT.get(artifact.kind)
+        if filename:
+            _write_markdown(target_dir / filename, artifact.content)
 
 
 def _latest_parts(parts: Iterable[DossierPart]) -> list[DossierPart]:

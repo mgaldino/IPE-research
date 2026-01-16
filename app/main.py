@@ -30,6 +30,11 @@ from .models import (
     LiteratureQuery,
     LiteratureWork,
     ProviderCredential,
+    ProjectLevel,
+    Review,
+    ReviewArtifact,
+    ReviewGateResult,
+    ReviewType,
     Run,
     RunStatus,
 )
@@ -77,6 +82,14 @@ class RunInput(BaseModel):
     topic_focus: Optional[str] = None
     literature_query_id: Optional[int] = None
     use_assessment_seeds: bool = False
+
+
+class ReviewInput(BaseModel):
+    review_type: ReviewType
+    level: Optional[ProjectLevel] = None
+    title: Optional[str] = None
+    domain: Optional[str] = None
+    method_family: Optional[str] = None
 
 
 class GateUpdate(BaseModel):
@@ -315,6 +328,80 @@ async def get_idea(idea_id: int) -> dict:
             else None
         ),
         "council_memos": [{"referee": memo.referee, "content": memo.content} for memo in memos],
+    }
+
+
+@app.get("/api/reviews")
+async def list_reviews() -> List[dict]:
+    with Session(engine) as session:
+        reviews = session.exec(select(Review).order_by(Review.created_at.desc())).all()
+    return [
+        {
+            "id": review.id,
+            "review_type": review.review_type.value,
+            "level": review.level.value if review.level else None,
+            "status": review.status.value,
+            "title": review.title,
+            "domain": review.domain,
+            "method_family": review.method_family,
+            "created_at": review.created_at.isoformat(),
+            "updated_at": review.updated_at.isoformat(),
+        }
+        for review in reviews
+    ]
+
+
+@app.post("/api/reviews")
+async def create_review(payload: ReviewInput) -> dict:
+    if payload.review_type == ReviewType.project and payload.level is None:
+        raise HTTPException(status_code=400, detail="Project reviews require a level")
+    level = payload.level if payload.review_type == ReviewType.project else None
+    with Session(engine) as session:
+        review = Review(
+            review_type=payload.review_type,
+            level=level,
+            title=payload.title,
+            domain=payload.domain,
+            method_family=payload.method_family,
+        )
+        session.add(review)
+        session.commit()
+        session.refresh(review)
+    return {"review_id": review.id}
+
+
+@app.get("/api/reviews/{review_id}")
+async def get_review(review_id: int) -> dict:
+    with Session(engine) as session:
+        review = session.get(Review, review_id)
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+        artifacts = session.exec(
+            select(ReviewArtifact).where(ReviewArtifact.review_id == review_id)
+        ).all()
+        gates = session.exec(
+            select(ReviewGateResult).where(ReviewGateResult.review_id == review_id)
+        ).all()
+    return {
+        "review": {
+            "id": review.id,
+            "review_type": review.review_type.value,
+            "level": review.level.value if review.level else None,
+            "status": review.status.value,
+            "title": review.title,
+            "domain": review.domain,
+            "method_family": review.method_family,
+            "created_at": review.created_at.isoformat(),
+            "updated_at": review.updated_at.isoformat(),
+        },
+        "artifacts": [
+            {"kind": artifact.kind.value, "content": artifact.content}
+            for artifact in artifacts
+        ],
+        "gates": [
+            {"gate": gate.gate, "status": gate.status.value, "notes": gate.notes}
+            for gate in gates
+        ],
     }
 
 

@@ -6,10 +6,21 @@ from pathlib import Path
 from sqlmodel import SQLModel, Session, create_engine
 from sqlalchemy import text
 
-from app.artifacts import IDEA_LAYOUT, write_council_memos, write_dossier_parts
+from app.artifacts import (
+    IDEA_LAYOUT,
+    write_council_memos,
+    write_dossier_parts,
+    write_review_artifacts,
+)
 from app.migrations import apply_migrations
 from app.modes import MODE_IDEATION, get_mode_config
-from app.models import CouncilMemo, DossierKind, DossierPart
+from app.models import (
+    CouncilMemo,
+    DossierKind,
+    DossierPart,
+    ReviewArtifact,
+    ReviewArtifactKind,
+)
 from app.prompts import build_prompt
 
 
@@ -60,6 +71,18 @@ class CoreRefactorTest(unittest.TestCase):
             memo_path = base / "council" / "Ref_A.md"
             self.assertTrue(memo_path.exists())
             self.assertEqual(memo_path.read_text(encoding="utf-8").strip(), "Memo A")
+
+            review_artifacts = [
+                ReviewArtifact(
+                    review_id=1,
+                    kind=ReviewArtifactKind.referee_memo,
+                    content="Review memo",
+                )
+            ]
+            write_review_artifacts(base / "review", review_artifacts)
+            review_path = base / "review" / "REFEREE_MEMO.md"
+            self.assertTrue(review_path.exists())
+            self.assertEqual(review_path.read_text(encoding="utf-8").strip(), "Review memo")
 
 
 if __name__ == "__main__":
