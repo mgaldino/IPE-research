@@ -49,6 +49,7 @@ Open the UI:
 ## Run form fields
 - Idea count: how many idea dossiers to generate in a single swarm run.
 - Topic focus: optional hint to steer generation toward a specific IPE topic or lane.
+- Exclude topics: optional list of topics to avoid (separate with ';').
 - Use assessment idea prompts: if enabled, seed each idea from the assessment’s “idea prompts” section.
 
 ## Council personas
@@ -67,3 +68,4 @@ pytest
 ## Notes
 - All analysis is design-only; no execution or estimation is performed.
 - LLM assessments are optional and depend on provider quotas.
+- OpenAI requests use a 180s timeout and retry once on read timeouts.

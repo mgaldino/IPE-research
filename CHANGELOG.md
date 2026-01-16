@@ -12,5 +12,6 @@
 - Moved works and assessment to full-width sections in the literature review UI.
 - Added provider connectivity tests and model normalization for Gemini/OpenAI.
 - Updated OpenAI provider to use Responses API for gpt-5* models.
+- Increased OpenAI timeout to 180s with one retry on read timeouts.
 - Hardened server restart behavior and error messaging (quota/429).
 - Strengthened council personas and enforced X/10 scoring format.

@@ -24,12 +24,21 @@ class OpenAIProvider:
                 return "\n".join(parts).strip()
         return ""
 
+    async def _post_with_retry(self, client: httpx.AsyncClient, url: str, payload: dict, headers: dict) -> httpx.Response:
+        try:
+            return await client.post(url, json=payload, headers=headers)
+        except httpx.ReadTimeout as exc:
+            try:
+                return await client.post(url, json=payload, headers=headers)
+            except httpx.ReadTimeout as retry_exc:
+                raise RuntimeError("OpenAI request timed out after 2 attempts.") from retry_exc
+
     async def generate(self, prompt: str, model: str, api_key: str) -> ProviderResponse:
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=180.0) as client:
             if self._use_responses_api(model):
                 payload = {
                     "model": model,
@@ -41,7 +50,12 @@ class OpenAIProvider:
                         {"role": "user", "content": [{"type": "input_text", "text": prompt}]},
                     ],
                 }
-                response = await client.post("https://api.openai.com/v1/responses", json=payload, headers=headers)
+                response = await self._post_with_retry(
+                    client,
+                    "https://api.openai.com/v1/responses",
+                    payload,
+                    headers,
+                )
                 if response.status_code >= 400:
                     raise RuntimeError(f"OpenAI error {response.status_code}: {response.text}")
                 data = response.json()
@@ -55,10 +69,11 @@ class OpenAIProvider:
                     ],
                     "temperature": 0.7,
                 }
-                response = await client.post(
+                response = await self._post_with_retry(
+                    client,
                     "https://api.openai.com/v1/chat/completions",
-                    json=payload,
-                    headers=headers,
+                    payload,
+                    headers,
                 )
                 if response.status_code >= 400:
                     raise RuntimeError(f"OpenAI error {response.status_code}: {response.text}")
