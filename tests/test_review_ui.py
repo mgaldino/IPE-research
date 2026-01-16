@@ -8,6 +8,7 @@ class ReviewUiTest(unittest.TestCase):
         self.assertIn('id="review-form"', html)
         self.assertIn('id="review-list"', html)
         self.assertIn('id="review-detail"', html)
+        self.assertIn('id="review-attach"', html)
 
 
 if __name__ == "__main__":

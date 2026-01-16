@@ -34,6 +34,7 @@ from .models import (
     Review,
     ReviewArtifact,
     ReviewGateResult,
+    ReviewSection,
     ReviewType,
     Run,
     RunStatus,
@@ -41,6 +42,7 @@ from .models import (
 from .orchestrator import DEFAULT_MODELS, run_swarm, PROVIDERS
 from .literature import EXCLUDED_WORK_TYPES, rebuild_assessment, run_literature_query
 from .literature import extract_pdf_text
+from .review_ingest import extract_pdf_pages, split_sections
 from .modes import MODE_IDEATION, get_mode_config
 from .prompts import (
     build_council_prompt_with_dossier,
@@ -90,6 +92,10 @@ class ReviewInput(BaseModel):
     title: Optional[str] = None
     domain: Optional[str] = None
     method_family: Optional[str] = None
+
+
+class ReviewAttachPdfInput(BaseModel):
+    filename: str
 
 
 class GateUpdate(BaseModel):
@@ -382,6 +388,9 @@ async def get_review(review_id: int) -> dict:
         gates = session.exec(
             select(ReviewGateResult).where(ReviewGateResult.review_id == review_id)
         ).all()
+        sections = session.exec(
+            select(ReviewSection).where(ReviewSection.review_id == review_id)
+        ).all()
     return {
         "review": {
             "id": review.id,
@@ -402,7 +411,52 @@ async def get_review(review_id: int) -> dict:
             {"gate": gate.gate, "status": gate.status.value, "notes": gate.notes}
             for gate in gates
         ],
+        "sections": [
+            {
+                "section_id": section.section_id,
+                "title": section.title,
+                "page_start": section.page_start,
+                "page_end": section.page_end,
+                "excerpt": section.excerpt,
+            }
+            for section in sections
+        ],
     }
+
+
+@app.post("/api/reviews/{review_id}/attach-pdf")
+async def attach_pdf_to_review(review_id: int, payload: ReviewAttachPdfInput) -> dict:
+    pdf_dir = BASE_DIR / "reviews" / "pdfs" / str(review_id)
+    pdf_path = (pdf_dir / payload.filename).resolve()
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail="PDF not found")
+    if pdf_dir.resolve() not in pdf_path.parents:
+        raise HTTPException(status_code=400, detail="Invalid PDF path")
+    pages = extract_pdf_pages(pdf_path)
+    sections = split_sections(pages)
+    with Session(engine) as session:
+        review = session.get(Review, review_id)
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+        session.exec(
+            ReviewSection.__table__.delete().where(ReviewSection.review_id == review_id)
+        )
+        session.add_all([
+            ReviewSection(
+                review_id=review_id,
+                section_id=section.section_id,
+                title=section.title,
+                content=section.content,
+                page_start=section.page_start,
+                page_end=section.page_end,
+                excerpt=section.excerpt,
+            )
+            for section in sections
+        ])
+        review.updated_at = datetime.now(timezone.utc)
+        session.add(review)
+        session.commit()
+    return {"review_id": review_id, "sections": len(sections)}
 
 
 @app.put("/api/ideas/{idea_id}/gates/{gate_id}")

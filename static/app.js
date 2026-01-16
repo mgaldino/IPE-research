@@ -196,12 +196,17 @@ async function loadReviewDetail(reviewId) {
   detail.innerHTML = "<p>Loading review...</p>";
   const data = await fetchJSON(`/api/reviews/${reviewId}`);
   const review = data.review;
+  const sections = (data.sections || [])
+    .map((section) => `${section.section_id} ${section.title} (p${section.page_start}-${section.page_end})`)
+    .join("\n");
   detail.innerHTML = `
     <h4>${review.title || "Untitled Review"}</h4>
     <div>Type: ${review.review_type}</div>
     <div>Level: ${review.level || "n/a"}</div>
     <div>Domain: ${review.domain || "n/a"}</div>
     <div>Method: ${review.method_family || "n/a"}</div>
+    <h4>Sections</h4>
+    <pre>${sections || "No sections yet."}</pre>
     <h4>Artifacts</h4>
     <pre>${(data.artifacts || []).map((a) => `${a.kind}\\n${a.content}`).join("\\n\\n") || "No artifacts yet."}</pre>
   `;
@@ -994,6 +999,7 @@ function wireForms() {
     updateReviewLevelVisibility();
     const typeSelect = document.getElementById("review-type");
     typeSelect.addEventListener("change", updateReviewLevelVisibility);
+    const attachButton = document.getElementById("review-attach");
 
     reviewForm.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -1026,6 +1032,32 @@ function wireForms() {
         message.textContent = error.message;
       }
     });
+
+    if (attachButton) {
+      attachButton.addEventListener("click", async () => {
+        const message = document.getElementById("review-message");
+        message.textContent = "";
+        if (!state.selectedReviewId) {
+          message.textContent = "Select a review first.";
+          return;
+        }
+        const filename = document.getElementById("review-pdf").value;
+        if (!filename) {
+          message.textContent = "Provide a PDF filename.";
+          return;
+        }
+        try {
+          await fetchJSON(`/api/reviews/${state.selectedReviewId}/attach-pdf`, {
+            method: "POST",
+            body: JSON.stringify({ filename }),
+          });
+          message.textContent = "PDF attached and sections indexed.";
+          await loadReviewDetail(state.selectedReviewId);
+        } catch (error) {
+          message.textContent = error.message;
+        }
+      });
+    }
   }
 
   ["run-provider", "run-model", "idea-count", "topic-focus", "topic-exclude", "run-literature", "use-assessment-seeds"].forEach((id) => {

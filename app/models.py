@@ -169,6 +169,18 @@ class ReviewGateResult(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utc_now)
 
 
+class ReviewSection(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    review_id: int = Field(index=True)
+    section_id: str
+    title: str
+    content: str
+    page_start: int
+    page_end: int
+    excerpt: str
+    created_at: datetime = Field(default_factory=utc_now)
+
+
 class LiteratureQuery(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     query: str
