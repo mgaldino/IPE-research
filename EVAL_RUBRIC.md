@@ -2,6 +2,20 @@
 
 Council scoring rubric, thresholds, veto rules.
 
+## Review mode scoring (paper/project)
+Use a single overall score (X/10) aligned with APSR-level expectations.
+Score anchors:
+- 9-10: field-shaping contribution, clear logic, credible design/evidence, minimal revisions.
+- 7-8: strong, publishable with major revisions; clear contribution and defensible design.
+- 5-6: promising but significant weaknesses in theory/design/evidence.
+- 3-4: incremental, unclear contribution, or weak methodological foundation.
+- 1-2: not viable at APSR standards.
+
+Verdict mapping:
+- 8-10: Revise
+- 5-7: Major Revise
+- 1-4: Reject
+
 ## Scoring scale (1-10)
 - 9-10: field-shaping, credible design, unusually clear stakes
 - 7-8: strong, publishable in top field outlets if executed well
