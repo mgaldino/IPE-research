@@ -436,11 +436,15 @@ async def attach_pdf_to_review(review_id: int, payload: ReviewAttachPdfInput) ->
         raise HTTPException(status_code=400, detail="Invalid PDF path")
     pages = extract_pdf_pages(pdf_path)
     sections = split_sections(pages)
-    artifacts = build_grounded_artifacts(sections)
     with Session(engine) as session:
         review = session.get(Review, review_id)
         if not review:
             raise HTTPException(status_code=404, detail="Review not found")
+        artifacts = build_grounded_artifacts(
+            sections,
+            review_type=review.review_type.value,
+            level=review.level.value if review.level else None,
+        )
         session.exec(
             ReviewSection.__table__.delete().where(ReviewSection.review_id == review_id)
         )

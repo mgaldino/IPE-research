@@ -96,11 +96,18 @@ def split_sections(pages: Iterable[str]) -> list[ReviewSection]:
     return sections
 
 
-def build_grounded_artifacts(sections: list[ReviewSection]) -> dict[str, str]:
+def build_grounded_artifacts(
+    sections: list[ReviewSection],
+    *,
+    review_type: str,
+    level: str | None,
+) -> dict[str, str]:
     if not sections:
         memo = "\n".join([
             "Referee Memo",
             "",
+            f"- Review type: {review_type}",
+            f"- Level: {level or 'n/a'}",
             "- Summary: No sections available for review.",
             "- Contribution: n/a",
             "- Design/ID: n/a",
@@ -119,14 +126,18 @@ def build_grounded_artifacts(sections: list[ReviewSection]) -> dict[str, str]:
         return {"REFEREE_MEMO": memo, "REVISION_CHECKLIST": checklist}
 
     top_sections = sections[:3]
+    expectations = _expectations_for(review_type, level)
     summary_lines = [
         "Referee Memo",
         "",
+        f"- Review type: {review_type}",
+        f"- Level: {level or 'n/a'}",
         "- Summary: Review generated from indexed sections.",
         "- Contribution: n/a (needs manual assessment).",
         "- Design/ID: n/a (needs manual assessment).",
         "- Measurement: n/a (needs manual assessment).",
         "- Feasibility: n/a (needs manual assessment).",
+        f"- Expectations: {expectations}",
         "- Verdict: revise",
     ]
     checklist_lines = ["Revision Checklist", ""]
@@ -142,6 +153,20 @@ def build_grounded_artifacts(sections: list[ReviewSection]) -> dict[str, str]:
         "REFEREE_MEMO": "\n".join(summary_lines),
         "REVISION_CHECKLIST": "\n".join(checklist_lines).strip(),
     }
+
+
+def _expectations_for(review_type: str, level: str | None) -> str:
+    if review_type == "paper":
+        return "Journal-standard contribution, clarity, and design credibility."
+    if not level:
+        return "Project-standard contribution and feasibility."
+    level_map = {
+        "IC": "Scope discipline and feasibility at an undergraduate level.",
+        "Mestrado": "Coherent theory and feasible design at a masters level.",
+        "Doutorado": "Agenda-setting contribution with deep identification logic.",
+        "FAPESP": "Feasibility, execution risk, and public value clarity.",
+    }
+    return level_map.get(level, "Project-standard contribution and feasibility.")
 
 
 def _is_heading(line: str) -> bool:

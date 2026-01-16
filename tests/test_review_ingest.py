@@ -20,13 +20,18 @@ class ReviewIngestTest(unittest.TestCase):
     def setUp(self) -> None:
         create_db_and_tables()
         self.client = TestClient(app)
-        response = self.client.post(
-            "/api/reviews",
-            json={"review_type": "paper", "title": "Paper X"},
-        )
-        self.review_id = response.json()["review_id"]
+        self.review_id = self._create_review({"review_type": "paper", "title": "Paper X"})
 
     def tearDown(self) -> None:
+        from sqlmodel import Session
+        from app.models import Review, ReviewArtifact, ReviewGateResult, ReviewSection
+
+        with Session(engine) as session:
+            session.exec(ReviewArtifact.__table__.delete())
+            session.exec(ReviewGateResult.__table__.delete())
+            session.exec(ReviewSection.__table__.delete())
+            session.exec(Review.__table__.delete())
+            session.commit()
         engine.dispose()
         review_dir = BASE_DIR / "reviews"
         if review_dir.exists():
@@ -54,6 +59,34 @@ class ReviewIngestTest(unittest.TestCase):
         kinds = {artifact["kind"] for artifact in artifacts}
         self.assertIn("REFEREE_MEMO", kinds)
         self.assertIn("REVISION_CHECKLIST", kinds)
+        memo = next(a["content"] for a in artifacts if a["kind"] == "REFEREE_MEMO")
+        self.assertIn("Review type: paper", memo)
+        self.assertIn("Expectations: Journal-standard", memo)
+
+    def test_project_level_expectations(self) -> None:
+        review_id = self._create_review(
+            {"review_type": "project", "level": "Mestrado", "title": "Project Y"}
+        )
+        pdf_dir = BASE_DIR / "reviews" / "pdfs" / str(review_id)
+        pdf_dir.mkdir(parents=True, exist_ok=True)
+        pdf_path = pdf_dir / "project.pdf"
+        _write_test_pdf(pdf_path)
+
+        response = self.client.post(
+            f"/api/reviews/{review_id}/attach-pdf",
+            json={"filename": "project.pdf"},
+        )
+        self.assertEqual(response.status_code, 200)
+        detail = self.client.get(f"/api/reviews/{review_id}")
+        self.assertEqual(detail.status_code, 200)
+        artifacts = detail.json()["artifacts"]
+        memo = next(a["content"] for a in artifacts if a["kind"] == "REFEREE_MEMO")
+        self.assertIn("Level: Mestrado", memo)
+        self.assertIn("Expectations: Coherent theory and feasible design", memo)
+
+    def _create_review(self, payload: dict) -> int:
+        response = self.client.post("/api/reviews", json=payload)
+        return response.json()["review_id"]
 
 
 if __name__ == "__main__":
