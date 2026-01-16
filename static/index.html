@@ -157,6 +157,52 @@
         <p>Select an idea to view its dossier.</p>
       </div>
     </section>
+
+    <section class="panel split">
+      <div>
+        <h2>Review</h2>
+        <form id="review-form" class="stack">
+          <label for="review-type">Review type</label>
+          <select id="review-type" required>
+            <option value="paper">Paper</option>
+            <option value="project">Project</option>
+          </select>
+
+          <div id="review-level-wrapper">
+            <label for="review-level">Project level</label>
+            <select id="review-level">
+              <option value="IC">IC</option>
+              <option value="Mestrado">Mestrado</option>
+              <option value="Doutorado">Doutorado</option>
+              <option value="FAPESP">FAPESP</option>
+            </select>
+          </div>
+
+          <label for="review-title">Title</label>
+          <input type="text" id="review-title" placeholder="Optional title" />
+
+          <label for="review-domain">Domain</label>
+          <input type="text" id="review-domain" placeholder="IPE" />
+
+          <label for="review-method">Method family</label>
+          <input type="text" id="review-method" placeholder="DiD / SCM / Qualitative" />
+
+          <button type="submit">Create Review</button>
+          <div id="review-message" class="hint"></div>
+        </form>
+      </div>
+      <div>
+        <h2>Reviews</h2>
+        <div id="review-list" class="list"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Review Detail</h2>
+      <div id="review-detail" class="detail">
+        <p>Select a review to view its details.</p>
+      </div>
+    </section>
   </div>
 
   <script src="/static/app.js"></script>

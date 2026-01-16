@@ -3,6 +3,7 @@ const state = {
   literatureQueries: [],
   selectedIdeaId: null,
   selectedLiteratureId: null,
+  selectedReviewId: null,
   localPdfs: [],
   runFormState: {
     provider: "",
@@ -149,6 +150,61 @@ async function loadIdeas() {
     item.addEventListener("click", () => loadIdeaDetail(idea.id));
     list.appendChild(item);
   });
+}
+
+function updateReviewLevelVisibility() {
+  const typeSelect = document.getElementById("review-type");
+  const levelWrapper = document.getElementById("review-level-wrapper");
+  if (!typeSelect || !levelWrapper) {
+    return;
+  }
+  const isProject = typeSelect.value === "project";
+  levelWrapper.style.display = isProject ? "block" : "none";
+}
+
+async function loadReviews() {
+  const list = document.getElementById("review-list");
+  if (!list) {
+    return;
+  }
+  list.innerHTML = "";
+  const data = await fetchJSON("/api/reviews");
+  data.forEach((review) => {
+    const item = document.createElement("div");
+    item.className = "list-item";
+    if (review.id === state.selectedReviewId) {
+      item.classList.add("selected");
+    }
+    const level = review.level ? ` | ${review.level}` : "";
+    item.innerHTML = `
+      <strong>${review.title || "Untitled Review"}</strong>
+      <div>${review.review_type}${level}</div>
+      <div>${review.domain || "No domain"} | ${review.method_family || "No method"}</div>
+      <div>${review.created_at}</div>
+    `;
+    item.addEventListener("click", () => loadReviewDetail(review.id));
+    list.appendChild(item);
+  });
+}
+
+async function loadReviewDetail(reviewId) {
+  state.selectedReviewId = reviewId;
+  const detail = document.getElementById("review-detail");
+  if (!detail) {
+    return;
+  }
+  detail.innerHTML = "<p>Loading review...</p>";
+  const data = await fetchJSON(`/api/reviews/${reviewId}`);
+  const review = data.review;
+  detail.innerHTML = `
+    <h4>${review.title || "Untitled Review"}</h4>
+    <div>Type: ${review.review_type}</div>
+    <div>Level: ${review.level || "n/a"}</div>
+    <div>Domain: ${review.domain || "n/a"}</div>
+    <div>Method: ${review.method_family || "n/a"}</div>
+    <h4>Artifacts</h4>
+    <pre>${(data.artifacts || []).map((a) => `${a.kind}\\n${a.content}`).join("\\n\\n") || "No artifacts yet."}</pre>
+  `;
 }
 
 async function loadLiteratureQueries() {
@@ -933,6 +989,45 @@ function wireForms() {
     });
   }
 
+  const reviewForm = document.getElementById("review-form");
+  if (reviewForm) {
+    updateReviewLevelVisibility();
+    const typeSelect = document.getElementById("review-type");
+    typeSelect.addEventListener("change", updateReviewLevelVisibility);
+
+    reviewForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const message = document.getElementById("review-message");
+      message.textContent = "";
+      const reviewType = document.getElementById("review-type").value;
+      const level = document.getElementById("review-level").value;
+      const title = document.getElementById("review-title").value;
+      const domain = document.getElementById("review-domain").value;
+      const method = document.getElementById("review-method").value;
+
+      const payload = {
+        review_type: reviewType,
+        title: title || null,
+        domain: domain || null,
+        method_family: method || null,
+      };
+      if (reviewType === "project") {
+        payload.level = level;
+      }
+
+      try {
+        await fetchJSON("/api/reviews", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        message.textContent = "Review created.";
+        await loadReviews();
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    });
+  }
+
   ["run-provider", "run-model", "idea-count", "topic-focus", "topic-exclude", "run-literature", "use-assessment-seeds"].forEach((id) => {
     const field = document.getElementById(id);
     if (field) {
@@ -954,9 +1049,13 @@ async function refreshLoop() {
   await loadRuns();
   await loadIdeas();
   await loadLiteratureQueries();
+  await loadReviews();
   restoreRunFormState();
   if (state.selectedLiteratureId) {
     await loadLiteratureDetail(state.selectedLiteratureId);
+  }
+  if (state.selectedReviewId) {
+    await loadReviewDetail(state.selectedReviewId);
   }
   window.scrollTo(0, scrollY);
   setTimeout(refreshLoop, 8000);
