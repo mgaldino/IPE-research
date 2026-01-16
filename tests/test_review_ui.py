@@ -7,6 +7,7 @@ class ReviewUiTest(unittest.TestCase):
         html = Path("static/index.html").read_text(encoding="utf-8")
         self.assertIn('id="review-form"', html)
         self.assertIn('id="review-list"', html)
+        self.assertIn('id="review-warning"', html)
         self.assertIn('id="review-detail"', html)
         self.assertIn('id="review-attach"', html)
         self.assertIn('id="review-provider"', html)

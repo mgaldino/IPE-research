@@ -577,7 +577,7 @@ async def run_review(review_id: int, payload: ReviewRunInput) -> dict:
         ).all()
     review_dir = BASE_DIR / "reviews" / str(review_id)
     write_review_artifacts(review_dir, stored_artifacts)
-    return {"review_id": review_id, "status": "completed"}
+    return {"review_id": review_id, "status": "completed", "validation_errors": errors}
 
 
 @app.put("/api/ideas/{idea_id}/gates/{gate_id}")
@@ -616,10 +616,17 @@ def _restart_server(port: int) -> None:
 
 def _split_review_output(content: str) -> tuple[str, str]:
     marker = "REVISION_CHECKLIST"
-    if marker in content:
-        before, after = content.split(marker, 1)
-        memo = before.strip()
-        checklist = f"{marker}{after}".strip()
+    upper_content = content.upper()
+    if marker in upper_content:
+        index = upper_content.index(marker)
+        memo = content[:index].strip()
+        checklist = content[index:].strip()
+        return memo, checklist
+    alt_marker = "REVISION CHECKLIST"
+    if alt_marker in upper_content:
+        index = upper_content.index(alt_marker)
+        memo = content[:index].strip()
+        checklist = f"{marker}\n{content[index + len(alt_marker):].strip()}"
         return memo, checklist
     return content.strip(), "REVISION_CHECKLIST\n- No checklist provided."
 

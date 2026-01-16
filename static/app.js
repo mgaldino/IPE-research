@@ -201,15 +201,23 @@ async function loadReviews() {
 async function loadReviewDetail(reviewId) {
   state.selectedReviewId = reviewId;
   const detail = document.getElementById("review-detail");
+  const warning = document.getElementById("review-warning");
   if (!detail) {
     return;
   }
   detail.innerHTML = "<p>Loading review...</p>";
+  if (warning) {
+    warning.textContent = "";
+  }
   const data = await fetchJSON(`/api/reviews/${reviewId}`);
   const review = data.review;
   const sections = (data.sections || [])
     .map((section) => `${section.section_id} ${section.title} (p${section.page_start}-${section.page_end})`)
     .join("\n");
+  const artifactText = (data.artifacts || []).map((a) => a.content).join("\n");
+  if (warning && artifactText.includes("VALIDATION_NOTES")) {
+    warning.textContent = "Review output failed validation; see notes in checklist.";
+  }
   detail.innerHTML = `
     <h4>${review.title || "Untitled Review"}</h4>
     <div>Type: ${review.review_type}</div>
