@@ -22,6 +22,7 @@ from .models import (
     RunStatus,
     LiteratureAssessment,
 )
+from .modes import MODE_IDEATION, get_mode_config
 from .prompts import build_prompt
 from .providers.anthropic_provider import AnthropicProvider
 from .providers.gemini_provider import GeminiProvider
@@ -198,6 +199,7 @@ async def run_swarm(run_id: int, passphrase: str, base_dir: Path) -> None:
             api_key = decrypt_secret(passphrase, credential.api_key_encrypted, credential.salt)
 
         provider = PROVIDERS[run_provider]
+        mode_config = get_mode_config(MODE_IDEATION)
         assessment_text = None
         assessment_seeds: List[str] = []
         if run_literature_query_id:
@@ -222,7 +224,13 @@ async def run_swarm(run_id: int, passphrase: str, base_dir: Path) -> None:
                 session.refresh(idea)
                 idea_id = idea.id
 
-            pitch_prompt = build_prompt("pitch", run_topic_focus, assessment_text, idea_seed)
+            pitch_prompt = build_prompt(
+                "pitch",
+                run_topic_focus,
+                assessment_text,
+                idea_seed,
+                mode=mode_config.prompt_set,
+            )
             pitch_response = await provider.generate(pitch_prompt, run_model, api_key)
             pitch_content = pitch_response.content
             gate_status, gate_notes = _gate1_status(pitch_content)
@@ -272,23 +280,53 @@ async def run_swarm(run_id: int, passphrase: str, base_dir: Path) -> None:
             if gate_status != GateStatus.passed:
                 continue
 
-            design_prompt = build_prompt("design", run_topic_focus, assessment_text, idea_seed)
+            design_prompt = build_prompt(
+                "design",
+                run_topic_focus,
+                assessment_text,
+                idea_seed,
+                mode=mode_config.prompt_set,
+            )
             design_response = await provider.generate(design_prompt, run_model, api_key)
             design_content = design_response.content
 
-            data_prompt = build_prompt("data", run_topic_focus, assessment_text, idea_seed)
+            data_prompt = build_prompt(
+                "data",
+                run_topic_focus,
+                assessment_text,
+                idea_seed,
+                mode=mode_config.prompt_set,
+            )
             data_response = await provider.generate(data_prompt, run_model, api_key)
             data_content = data_response.content
 
-            positioning_prompt = build_prompt("positioning", run_topic_focus, assessment_text, idea_seed)
+            positioning_prompt = build_prompt(
+                "positioning",
+                run_topic_focus,
+                assessment_text,
+                idea_seed,
+                mode=mode_config.prompt_set,
+            )
             positioning_response = await provider.generate(positioning_prompt, run_model, api_key)
             positioning_content = positioning_response.content
 
-            next_steps_prompt = build_prompt("next_steps", run_topic_focus, assessment_text, idea_seed)
+            next_steps_prompt = build_prompt(
+                "next_steps",
+                run_topic_focus,
+                assessment_text,
+                idea_seed,
+                mode=mode_config.prompt_set,
+            )
             next_steps_response = await provider.generate(next_steps_prompt, run_model, api_key)
             next_steps_content = next_steps_response.content
 
-            council_prompt = build_prompt("council", run_topic_focus, assessment_text, idea_seed)
+            council_prompt = build_prompt(
+                "council",
+                run_topic_focus,
+                assessment_text,
+                idea_seed,
+                mode=mode_config.prompt_set,
+            )
             council_response = await provider.generate(council_prompt, run_model, api_key)
             council_content = council_response.content
 

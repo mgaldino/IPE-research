@@ -1,9 +1,9 @@
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from .models import DossierPart, DossierKind, CouncilMemo
+from .artifacts import IDEA_LAYOUT, write_council_memos, write_dossier_parts
+from .models import CouncilMemo, DossierPart
 
 REQUIRED_FILES = {
     "PLAN.md": "# PLAN\n\nActive work queue and checkpoints.\n",
@@ -34,26 +34,8 @@ def export_idea_markdown(
     council_memos: Iterable[CouncilMemo],
 ) -> None:
     idea_dir = base_dir / "ideas" / str(idea_id)
-    council_dir = idea_dir / "council"
-    os.makedirs(council_dir, exist_ok=True)
-
-    kind_to_filename = {
-        DossierKind.pitch: "PITCH.md",
-        DossierKind.design: "DESIGN.md",
-        DossierKind.data_plan: "DATA_PLAN.md",
-        DossierKind.positioning: "POSITIONING.md",
-        DossierKind.next_steps: "NEXT_STEPS.md",
-    }
-
-    for part in dossier_parts:
-        filename = kind_to_filename.get(part.kind)
-        if filename:
-            _write_markdown(idea_dir / filename, part.content)
-
-    for memo in council_memos:
-        safe_ref = memo.referee.replace(" ", "_")
-        memo_path = council_dir / f"{safe_ref}.md"
-        _write_markdown(memo_path, memo.content)
+    write_dossier_parts(idea_dir, IDEA_LAYOUT, dossier_parts)
+    write_council_memos(idea_dir / "council", council_memos)
 
 
 def snapshot_idea_version(
@@ -69,32 +51,8 @@ def snapshot_idea_version(
     version_id = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     version_dir = versions_dir / version_id
     version_dir.mkdir(parents=True, exist_ok=True)
-    council_dir = version_dir / "council"
-    council_dir.mkdir(parents=True, exist_ok=True)
-
-    latest_parts: dict[DossierKind, DossierPart] = {}
-    for part in dossier_parts:
-        current = latest_parts.get(part.kind)
-        if not current or part.updated_at >= current.updated_at:
-            latest_parts[part.kind] = part
-
-    kind_to_filename = {
-        DossierKind.pitch: "PITCH.md",
-        DossierKind.design: "DESIGN.md",
-        DossierKind.data_plan: "DATA_PLAN.md",
-        DossierKind.positioning: "POSITIONING.md",
-        DossierKind.next_steps: "NEXT_STEPS.md",
-    }
-
-    for kind, part in latest_parts.items():
-        filename = kind_to_filename.get(kind)
-        if filename:
-            _write_markdown(version_dir / filename, part.content)
-
-    for memo in council_memos:
-        safe_ref = memo.referee.replace(" ", "_")
-        memo_path = council_dir / f"{safe_ref}.md"
-        _write_markdown(memo_path, memo.content)
+    write_dossier_parts(version_dir, IDEA_LAYOUT, dossier_parts, latest_only=True)
+    write_council_memos(version_dir / "council", council_memos)
 
     created_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     version_meta = "\n".join([

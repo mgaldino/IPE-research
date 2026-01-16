@@ -36,6 +36,7 @@ from .models import (
 from .orchestrator import DEFAULT_MODELS, run_swarm, PROVIDERS
 from .literature import EXCLUDED_WORK_TYPES, rebuild_assessment, run_literature_query
 from .literature import extract_pdf_text
+from .modes import MODE_IDEATION, get_mode_config
 from .prompts import (
     build_council_prompt_with_dossier,
     build_literature_paper_prompt,
@@ -729,7 +730,12 @@ async def resubmit_to_council(idea_id: int, payload: ResubmitInput) -> dict:
             topic_focus = run.topic_focus if run else None
             latest_parts = _latest_parts_by_kind(parts)
             dossier_payload = {key: part.content for key, part in latest_parts.items()}
-            council_prompt = build_council_prompt_with_dossier(dossier_payload, topic_focus)
+            mode_config = get_mode_config(MODE_IDEATION)
+            council_prompt = build_council_prompt_with_dossier(
+                dossier_payload,
+                topic_focus,
+                mode=mode_config.prompt_set,
+            )
             council_response = await provider.generate(council_prompt, model, api_key)
             council_content = council_response.content
             round_number = _next_council_round(session, idea_id)

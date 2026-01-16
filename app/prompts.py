@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+
 BASE_CONTEXT = """
 You are an IPE research idea agent. Only propose design-level plans; do not run analyses, estimate models, scrape data, or claim results.
 Focus on International Political Economy. Use DiD, SCM, Shift-Share for causal ideas, or ideal point/latent trait models for descriptive ideas.
@@ -128,24 +132,50 @@ Lane catalog:
 """.strip()
 
 
+@dataclass(frozen=True)
+class PromptSet:
+    pitch: str
+    design: str
+    data: str
+    positioning: str
+    next_steps: str
+    council: str
+
+
+PROMPT_SETS = {
+    "ideation": PromptSet(
+        pitch=PITCH_TEMPLATE,
+        design=DESIGN_TEMPLATE,
+        data=DATA_PLAN_TEMPLATE,
+        positioning=POSITIONING_TEMPLATE,
+        next_steps=NEXT_STEPS_TEMPLATE,
+        council=COUNCIL_TEMPLATE,
+    ),
+}
+
+
 def build_prompt(
     section: str,
     topic_focus: str | None = None,
     assessment: str | None = None,
     idea_seed: str | None = None,
+    mode: str = "ideation",
 ) -> str:
     focus_line = f"Topic focus: {topic_focus}\n" if topic_focus else ""
     seed_line = f"Idea seed: {idea_seed}\n" if idea_seed else ""
     assessment_block = ""
     if assessment:
         assessment_block = f"Literature assessment:\n{assessment.strip()}\n"
+    prompt_set = PROMPT_SETS.get(mode)
+    if not prompt_set:
+        raise ValueError(f"Unknown prompt mode: {mode}")
     templates = {
-        "pitch": PITCH_TEMPLATE,
-        "design": DESIGN_TEMPLATE,
-        "data": DATA_PLAN_TEMPLATE,
-        "positioning": POSITIONING_TEMPLATE,
-        "next_steps": NEXT_STEPS_TEMPLATE,
-        "council": COUNCIL_TEMPLATE,
+        "pitch": prompt_set.pitch,
+        "design": prompt_set.design,
+        "data": prompt_set.data,
+        "positioning": prompt_set.positioning,
+        "next_steps": prompt_set.next_steps,
+        "council": prompt_set.council,
     }
     return "\n\n".join([
         BASE_CONTEXT,
@@ -189,8 +219,9 @@ def build_literature_synthesis_prompt(
 def build_council_prompt_with_dossier(
     dossier_parts: dict[str, str],
     topic_focus: str | None = None,
+    mode: str = "ideation",
 ) -> str:
-    base = build_prompt("council", topic_focus)
+    base = build_prompt("council", topic_focus, mode=mode)
     ordered_keys = ["PITCH", "DESIGN", "DATA_PLAN", "POSITIONING", "NEXT_STEPS"]
     dossier_blocks = []
     for key in ordered_keys:
