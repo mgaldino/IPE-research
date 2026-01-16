@@ -17,6 +17,7 @@ from sqlmodel import Session, select
 
 from .crypto import prepare_encrypted_secret, decrypt_secret
 from .db import create_db_and_tables, engine
+from .artifacts import write_review_artifacts
 from .files import ensure_required_files, export_idea_markdown, snapshot_idea_version
 from .models import (
     CouncilMemo,
@@ -33,6 +34,7 @@ from .models import (
     ProjectLevel,
     Review,
     ReviewArtifact,
+    ReviewArtifactKind,
     ReviewGateResult,
     ReviewSection,
     ReviewType,
@@ -42,7 +44,7 @@ from .models import (
 from .orchestrator import DEFAULT_MODELS, run_swarm, PROVIDERS
 from .literature import EXCLUDED_WORK_TYPES, rebuild_assessment, run_literature_query
 from .literature import extract_pdf_text
-from .review_ingest import extract_pdf_pages, split_sections
+from .review_ingest import extract_pdf_pages, split_sections, build_grounded_artifacts
 from .modes import MODE_IDEATION, get_mode_config
 from .prompts import (
     build_council_prompt_with_dossier,
@@ -434,12 +436,16 @@ async def attach_pdf_to_review(review_id: int, payload: ReviewAttachPdfInput) ->
         raise HTTPException(status_code=400, detail="Invalid PDF path")
     pages = extract_pdf_pages(pdf_path)
     sections = split_sections(pages)
+    artifacts = build_grounded_artifacts(sections)
     with Session(engine) as session:
         review = session.get(Review, review_id)
         if not review:
             raise HTTPException(status_code=404, detail="Review not found")
         session.exec(
             ReviewSection.__table__.delete().where(ReviewSection.review_id == review_id)
+        )
+        session.exec(
+            ReviewArtifact.__table__.delete().where(ReviewArtifact.review_id == review_id)
         )
         session.add_all([
             ReviewSection(
@@ -453,9 +459,26 @@ async def attach_pdf_to_review(review_id: int, payload: ReviewAttachPdfInput) ->
             )
             for section in sections
         ])
+        session.add_all([
+            ReviewArtifact(
+                review_id=review_id,
+                kind=ReviewArtifactKind.referee_memo,
+                content=artifacts["REFEREE_MEMO"],
+            ),
+            ReviewArtifact(
+                review_id=review_id,
+                kind=ReviewArtifactKind.revision_checklist,
+                content=artifacts["REVISION_CHECKLIST"],
+            ),
+        ])
         review.updated_at = datetime.now(timezone.utc)
         session.add(review)
         session.commit()
+        stored_artifacts = session.exec(
+            select(ReviewArtifact).where(ReviewArtifact.review_id == review_id)
+        ).all()
+    review_dir = BASE_DIR / "reviews" / str(review_id)
+    write_review_artifacts(review_dir, stored_artifacts)
     return {"review_id": review_id, "sections": len(sections)}
 
 

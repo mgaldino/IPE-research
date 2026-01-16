@@ -96,6 +96,54 @@ def split_sections(pages: Iterable[str]) -> list[ReviewSection]:
     return sections
 
 
+def build_grounded_artifacts(sections: list[ReviewSection]) -> dict[str, str]:
+    if not sections:
+        memo = "\n".join([
+            "Referee Memo",
+            "",
+            "- Summary: No sections available for review.",
+            "- Contribution: n/a",
+            "- Design/ID: n/a",
+            "- Measurement: n/a",
+            "- Feasibility: n/a",
+            "- Verdict: revise",
+        ])
+        checklist = "\n".join([
+            "Revision Checklist",
+            "",
+            "- Section: n/a",
+            "  Evidence: n/a",
+            "  Issue: Missing document content.",
+            "  Minimal fix: Attach a PDF and re-run review.",
+        ])
+        return {"REFEREE_MEMO": memo, "REVISION_CHECKLIST": checklist}
+
+    top_sections = sections[:3]
+    summary_lines = [
+        "Referee Memo",
+        "",
+        "- Summary: Review generated from indexed sections.",
+        "- Contribution: n/a (needs manual assessment).",
+        "- Design/ID: n/a (needs manual assessment).",
+        "- Measurement: n/a (needs manual assessment).",
+        "- Feasibility: n/a (needs manual assessment).",
+        "- Verdict: revise",
+    ]
+    checklist_lines = ["Revision Checklist", ""]
+    for section in top_sections:
+        checklist_lines.extend([
+            f"- Section: {section.section_id} {section.title}",
+            f"  Evidence: \"{section.excerpt}\"",
+            "  Issue: Review requires grounded critique; add specific notes.",
+            "  Minimal fix: Provide focused critique for this section.",
+            "",
+        ])
+    return {
+        "REFEREE_MEMO": "\n".join(summary_lines),
+        "REVISION_CHECKLIST": "\n".join(checklist_lines).strip(),
+    }
+
+
 def _is_heading(line: str) -> bool:
     if not line or len(line) > 80:
         return False

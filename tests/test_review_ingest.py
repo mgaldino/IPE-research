@@ -50,6 +50,10 @@ class ReviewIngestTest(unittest.TestCase):
         self.assertEqual(detail.status_code, 200)
         detail_payload = detail.json()
         self.assertGreaterEqual(len(detail_payload["sections"]), 1)
+        artifacts = detail_payload["artifacts"]
+        kinds = {artifact["kind"] for artifact in artifacts}
+        self.assertIn("REFEREE_MEMO", kinds)
+        self.assertIn("REVISION_CHECKLIST", kinds)
 
 
 if __name__ == "__main__":
