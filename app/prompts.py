@@ -142,8 +142,8 @@ REVISION_CHECKLIST
   - Each item must include: Section ID, Issue, Quote (<=20 words), Suggested fix
 
 Rules:
-- Use section IDs exactly as provided.
-- Minor issues must include a quote line labeled "Quote:" from the text.
+- Use section IDs exactly as provided (format S#).
+- For minor issues, put the quote on its own line labeled "Quote:".
 - Major issues should be grounded, but quotes are optional.
 """.strip()
 
@@ -165,8 +165,8 @@ REVISION_CHECKLIST
   - Each item must include: Section ID, Issue, Quote (<=20 words), Suggested fix
 
 Rules:
-- Use section IDs exactly as provided.
-- Minor issues must include a quote line labeled "Quote:" from the text.
+- Use section IDs exactly as provided (format S#).
+- For minor issues, put the quote on its own line labeled "Quote:".
 - Major issues should be grounded, but quotes are optional.
 """.strip()
 LANE_CATALOG = """

@@ -26,7 +26,8 @@ class ReviewPromptTest(unittest.TestCase):
         self.assertIn("S1 Introduction", prompt)
         self.assertIn("REFEREE_MEMO", prompt)
         self.assertIn("REVISION_CHECKLIST", prompt)
-        self.assertIn('Minor issues must include a quote line labeled "Quote:"', prompt)
+        self.assertIn('Use section IDs exactly as provided (format S#).', prompt)
+        self.assertIn('For minor issues, put the quote on its own line labeled "Quote:".', prompt)
 
 
 if __name__ == "__main__":
