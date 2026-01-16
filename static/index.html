@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPE Breakthrough Idea Swarm</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <h1>IPE Breakthrough Idea Swarm</h1>
+        <p>Single-page dashboard for running the agent swarm and reviewing idea dossiers.</p>
+      </div>
+      <div class="status" id="session-status">Session locked</div>
+    </header>
+
+    <section class="panel">
+      <h2>Session</h2>
+      <form id="unlock-form" class="form-row">
+        <input type="password" id="passphrase" placeholder="Enter passphrase" required />
+        <button type="submit">Unlock</button>
+      </form>
+      <div class="hint">Passphrase is required to encrypt/decrypt provider keys for this session.</div>
+      <div class="hint">Keys are stored encrypted at rest in local SQLite and never sent elsewhere.</div>
+      <div class="action-row">
+        <button type="button" id="restart-server" class="button-secondary">Restart Server</button>
+        <span id="server-message" class="hint"></span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Provider Credentials</h2>
+      <form id="credentials-form" class="form-row">
+        <select id="provider"></select>
+        <input type="text" id="provider-name" placeholder="Label (optional)" />
+        <input type="password" id="api-key" placeholder="API key" required />
+        <button type="submit">Save</button>
+      </form>
+      <div id="credential-list" class="list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Start Swarm</h2>
+      <form id="run-form" class="form-grid">
+        <div>
+          <label for="run-provider">Provider</label>
+          <select id="run-provider"></select>
+        </div>
+        <div>
+          <label for="run-model">Model</label>
+          <input type="text" id="run-model" placeholder="Default" />
+        </div>
+        <div>
+          <label for="idea-count">Idea count</label>
+          <input type="number" id="idea-count" min="1" max="5" value="1" />
+        </div>
+        <div>
+          <label for="topic-focus">Topic focus (optional)</label>
+          <input type="text" id="topic-focus" placeholder="e.g., financial statecraft" />
+        </div>
+        <div>
+          <label for="run-literature">Literature query (optional)</label>
+          <select id="run-literature">
+            <option value="">No assessment</option>
+          </select>
+        </div>
+        <button type="submit">Start Swarm</button>
+      </form>
+      <div id="run-message" class="hint"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Literature Review</h2>
+      <form id="literature-form" class="form-grid">
+        <div>
+          <label for="literature-query">Search query</label>
+          <input type="text" id="literature-query" placeholder="e.g., sanctions enforcement networks" required />
+        </div>
+        <div>
+          <label for="openalex-email">OpenAlex email (required)</label>
+          <input type="email" id="openalex-email" placeholder="you@example.com" required />
+        </div>
+        <div>
+          <label for="semantic-key">Semantic Scholar API key (optional)</label>
+          <input type="password" id="semantic-key" placeholder="API key" />
+        </div>
+        <div>
+          <label for="literature-limit">Per-source limit</label>
+          <input type="number" id="literature-limit" min="5" max="50" value="20" />
+        </div>
+        <div class="source-box">
+          <label>Sources</label>
+          <label><input type="checkbox" id="source-openalex" checked /> OpenAlex</label>
+          <label><input type="checkbox" id="source-crossref" checked /> Crossref</label>
+          <label><input type="checkbox" id="source-semantic" /> Semantic Scholar</label>
+        </div>
+        <div class="source-box">
+          <label>Content filter</label>
+          <label><input type="checkbox" id="include-non-article" /> Include books/chapters</label>
+        </div>
+        <button type="submit">Run Review</button>
+      </form>
+      <div id="literature-message" class="hint"></div>
+      <div class="hint">For institutional PDFs, drop files into literature/pdfs/&lt;query_id&gt;/ and rerun the review.</div>
+      <div class="split">
+        <div>
+          <h3>Queries</h3>
+          <div id="literature-list" class="list"></div>
+        </div>
+        <div>
+          <h3>Assessment</h3>
+          <div id="literature-detail" class="detail">
+            <p>No query selected.</p>
+          </div>
+        </div>
+      </div>
+      <div id="literature-works-output" class="detail full-width">
+        <p>No works loaded.</p>
+      </div>
+      <div id="literature-assessment-output" class="detail full-width">
+        <p>No assessment loaded.</p>
+      </div>
+    </section>
+
+    <section class="panel split">
+      <div>
+        <h2>Runs</h2>
+        <div id="run-list" class="list"></div>
+      </div>
+      <div>
+        <h2>Ideas</h2>
+        <div class="action-row">
+          <label for="idea-status-filter">Status</label>
+          <select id="idea-status-filter">
+            <option value="all">All</option>
+            <option value="resubmitted">Resubmitted</option>
+            <option value="none">Unassigned</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div id="idea-list" class="list"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Idea Dossier</h2>
+      <div id="idea-detail" class="detail">
+        <p>Select an idea to view its dossier.</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+.DS_Store
+.venv/
+__pycache__/
+*.pyc
+*.log
+/tmp/
+
+codex_council.db
+literature/
+ideas/
+mail/
+
+# OS/editor
+.vscode/
+.idea/
