@@ -33,6 +33,7 @@ Active work queue and checkpoints.
 - Add UI indicator for assessment source (heuristic vs LLM) and last-run timestamp.
 - Tighten council scoring compliance (full rubric coverage and more conservative scoring).
 - Ship Review mode v1 in IPE-only scope (Referee Memo + Revision Checklist).
+- Review type split: Paper (single standard) vs Project (IC/Mestrado/Doutorado/FAPESP).
 - Implement PDF-to-structured-text ingestion with section IDs and evidence snippets.
 - Add grounding rules: every critique must cite section ID + quote/paraphrase.
 - Build a small evaluation harness (15–30 artifacts) with rubric-based regression checks.
