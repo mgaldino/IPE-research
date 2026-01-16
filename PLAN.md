@@ -30,6 +30,7 @@ Active work queue and checkpoints.
 - Add UI filters for journal/source/type and export lists of missing PDFs.
 - Add PI decision logging in DECISIONS.md and UI shortcuts.
 - Add UI indicator for assessment source (heuristic vs LLM) and last-run timestamp.
+- Tighten council scoring compliance (full rubric coverage and more conservative scoring).
 
 ## Backlog (project-level)
 - Dossier export improvements (batch export, zip per idea).

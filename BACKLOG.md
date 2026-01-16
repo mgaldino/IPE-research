@@ -3,7 +3,8 @@
 Idea pool with tags and rejection reasons.
 
 ## Product backlog
-- Add "topic exclusions" for swarm runs (negative topic focus alongside optional topic focus).
+- Add stricter council scoring guidance (complete score coverage, tougher scoring scale).
+- Ensure council memos always include full rubric scores (not just Lane Fit / Breakthrough).
 
 ## 2025-09-14 (manual ideation, no LLM)
 
