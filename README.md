@@ -26,6 +26,17 @@ pip install -r requirements.txt
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
+Or, using the built-in module runner:
+```bash
+. .venv/bin/activate
+python -m app
+```
+
+Or a one-liner helper (opens the browser):
+```bash
+./run_app.sh
+```
+
 Open the UI:
 - http://127.0.0.1:8001/
 
