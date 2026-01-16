@@ -9,6 +9,7 @@ const state = {
     model: "",
     ideaCount: "",
     topicFocus: "",
+    topicExclude: "",
     literatureQueryId: "",
     useAssessmentSeeds: "",
   },
@@ -98,11 +99,15 @@ async function loadRuns() {
   data.forEach((run) => {
     const item = document.createElement("div");
     item.className = "list-item";
+    const excludedCount = run.topic_exclude
+      ? run.topic_exclude.split(";").map((entry) => entry.trim()).filter(Boolean).length
+      : 0;
+    const focusLine = run.topic_focus || (excludedCount ? `Excluded topics: ${excludedCount}` : "No topic focus");
     item.innerHTML = `
       <strong>Run #${run.id} - ${run.status}</strong>
       <div>${run.provider} / ${run.model}</div>
       <div>${run.created_at}</div>
-      <div>${run.topic_focus || "No topic focus"}</div>
+      <div>${focusLine}</div>
     `;
     list.appendChild(item);
   });
@@ -132,6 +137,9 @@ async function loadIdeas() {
   filtered.forEach((idea) => {
     const item = document.createElement("div");
     item.className = "list-item";
+    if (idea.id === state.selectedIdeaId) {
+      item.classList.add("selected");
+    }
     const statusPill = idea.status ? `<span class="status-pill">${idea.status}</span>` : "";
     item.innerHTML = `
       <div class="list-title"><strong>${idea.title || "Untitled Idea"}</strong>${statusPill}</div>
@@ -168,12 +176,22 @@ async function loadLiteratureQueries() {
   data.forEach((query) => {
     const item = document.createElement("div");
     item.className = "list-item";
+    if (query.id === state.selectedLiteratureId) {
+      item.classList.add("selected");
+    }
     item.innerHTML = `
       <strong>${query.query}</strong>
       <div>${query.sources}</div>
       <div>Status: ${query.status}</div>
     `;
-    item.addEventListener("click", () => loadLiteratureDetail(query.id));
+    item.addEventListener("click", () => {
+      if (state.selectedLiteratureId === query.id) {
+        clearLiteratureDetail();
+        loadLiteratureQueries();
+        return;
+      }
+      loadLiteratureDetail(query.id);
+    });
     list.appendChild(item);
   });
 }
@@ -233,16 +251,7 @@ async function loadLiteratureDetail(queryId) {
     }
     try {
       await fetchJSON(`/api/literature/queries/${queryId}`, { method: "DELETE" });
-      state.selectedLiteratureId = null;
-      detail.innerHTML = "<p>No query selected.</p>";
-      const assessmentOutput = document.getElementById("literature-assessment-output");
-      if (assessmentOutput) {
-        assessmentOutput.innerHTML = "<p>No assessment loaded.</p>";
-      }
-      const worksOutput = document.getElementById("literature-works-output");
-      if (worksOutput) {
-        worksOutput.innerHTML = "<p>No works loaded.</p>";
-      }
+      clearLiteratureDetail();
       await loadLiteratureQueries();
     } catch (error) {
       alert(error.message);
@@ -465,6 +474,22 @@ async function loadLiteratureDetail(queryId) {
     } else {
       worksOutput.innerHTML = "<p>No works loaded.</p>";
     }
+  }
+}
+
+function clearLiteratureDetail() {
+  state.selectedLiteratureId = null;
+  const detail = document.getElementById("literature-detail");
+  if (detail) {
+    detail.innerHTML = "<p>No query selected.</p>";
+  }
+  const assessmentOutput = document.getElementById("literature-assessment-output");
+  if (assessmentOutput) {
+    assessmentOutput.innerHTML = "<p>No assessment loaded.</p>";
+  }
+  const worksOutput = document.getElementById("literature-works-output");
+  if (worksOutput) {
+    worksOutput.innerHTML = "<p>No works loaded.</p>";
   }
 }
 
@@ -706,9 +731,10 @@ function captureRunFormState() {
   const runModel = document.getElementById("run-model");
   const ideaCount = document.getElementById("idea-count");
   const topicFocus = document.getElementById("topic-focus");
+  const topicExclude = document.getElementById("topic-exclude");
   const literatureQuery = document.getElementById("run-literature");
   const useAssessmentSeeds = document.getElementById("use-assessment-seeds");
-  if (!runProvider || !runModel || !ideaCount || !topicFocus || !literatureQuery || !useAssessmentSeeds) {
+  if (!runProvider || !runModel || !ideaCount || !topicFocus || !topicExclude || !literatureQuery || !useAssessmentSeeds) {
     return;
   }
   state.runFormState = {
@@ -716,6 +742,7 @@ function captureRunFormState() {
     model: runModel.value,
     ideaCount: ideaCount.value,
     topicFocus: topicFocus.value,
+    topicExclude: topicExclude.value,
     literatureQueryId: literatureQuery.value,
     useAssessmentSeeds: useAssessmentSeeds.value,
   };
@@ -745,9 +772,10 @@ function restoreRunFormState() {
   const runModel = document.getElementById("run-model");
   const ideaCount = document.getElementById("idea-count");
   const topicFocus = document.getElementById("topic-focus");
+  const topicExclude = document.getElementById("topic-exclude");
   const literatureQuery = document.getElementById("run-literature");
   const useAssessmentSeeds = document.getElementById("use-assessment-seeds");
-  if (!runProvider || !runModel || !ideaCount || !topicFocus || !literatureQuery || !useAssessmentSeeds) {
+  if (!runProvider || !runModel || !ideaCount || !topicFocus || !topicExclude || !literatureQuery || !useAssessmentSeeds) {
     return;
   }
   if (state.runFormState.provider) {
@@ -758,6 +786,7 @@ function restoreRunFormState() {
     ideaCount.value = state.runFormState.ideaCount;
   }
   topicFocus.value = state.runFormState.topicFocus;
+  topicExclude.value = state.runFormState.topicExclude || "";
   if (state.runFormState.literatureQueryId) {
     literatureQuery.value = state.runFormState.literatureQueryId;
   }
@@ -833,6 +862,7 @@ function wireForms() {
     const model = document.getElementById("run-model").value;
     const ideaCount = parseInt(document.getElementById("idea-count").value, 10);
     const topicFocus = document.getElementById("topic-focus").value;
+    const topicExclude = document.getElementById("topic-exclude").value;
     const literatureQueryId = document.getElementById("run-literature").value;
     const useAssessmentSeeds = document.getElementById("use-assessment-seeds").value === "yes";
     const message = document.getElementById("run-message");
@@ -844,6 +874,7 @@ function wireForms() {
           model: model || null,
           idea_count: ideaCount,
           topic_focus: topicFocus || null,
+          topic_exclude: topicExclude || null,
           literature_query_id: literatureQueryId ? parseInt(literatureQueryId, 10) : null,
           use_assessment_seeds: useAssessmentSeeds,
         }),
@@ -902,7 +933,7 @@ function wireForms() {
     });
   }
 
-  ["run-provider", "run-model", "idea-count", "topic-focus", "run-literature", "use-assessment-seeds"].forEach((id) => {
+  ["run-provider", "run-model", "idea-count", "topic-focus", "topic-exclude", "run-literature", "use-assessment-seeds"].forEach((id) => {
     const field = document.getElementById(id);
     if (field) {
       field.addEventListener("input", captureRunFormState);

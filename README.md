@@ -69,3 +69,4 @@ pytest
 - All analysis is design-only; no execution or estimation is performed.
 - LLM assessments are optional and depend on provider quotas.
 - OpenAI requests use a 180s timeout and retry once on read timeouts.
+- Click a selected literature query again to clear the selection.
