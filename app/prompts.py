@@ -143,7 +143,7 @@ REVISION_CHECKLIST
 
 Rules:
 - Use section IDs exactly as provided.
-- Minor issues must include a quote from the text.
+- Minor issues must include a quote line labeled "Quote:" from the text.
 - Major issues should be grounded, but quotes are optional.
 """.strip()
 
@@ -166,7 +166,7 @@ REVISION_CHECKLIST
 
 Rules:
 - Use section IDs exactly as provided.
-- Minor issues must include a quote from the text.
+- Minor issues must include a quote line labeled "Quote:" from the text.
 - Major issues should be grounded, but quotes are optional.
 """.strip()
 LANE_CATALOG = """

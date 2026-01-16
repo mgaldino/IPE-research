@@ -541,6 +541,17 @@ async def run_review(review_id: int, payload: ReviewRunInput) -> dict:
         )
         response = await provider_impl.generate(prompt, model, api_key)
         memo, checklist = _split_review_output(response.content)
+        errors = _validate_review_output(
+            checklist,
+            [section.section_id for section in sections],
+        )
+        if errors:
+            checklist = "\n".join([
+                checklist.strip(),
+                "",
+                "VALIDATION_NOTES",
+                *[f"- {error}" for error in errors],
+            ])
 
         session.exec(
             ReviewArtifact.__table__.delete().where(ReviewArtifact.review_id == review_id)
@@ -611,6 +622,33 @@ def _split_review_output(content: str) -> tuple[str, str]:
         checklist = f"{marker}{after}".strip()
         return memo, checklist
     return content.strip(), "REVISION_CHECKLIST\n- No checklist provided."
+
+
+def _validate_review_output(checklist: str, section_ids: list[str]) -> list[str]:
+    errors = []
+    checklist_lines = [line.strip() for line in checklist.splitlines() if line.strip()]
+    if not any("Major" in line for line in checklist_lines):
+        errors.append("Checklist missing Major issues section.")
+    if not any("Minor" in line for line in checklist_lines):
+        errors.append("Checklist missing Minor issues section.")
+
+    current_bucket = None
+    for line in checklist_lines:
+        if line.lower().startswith("- major"):
+            current_bucket = "major"
+            continue
+        if line.lower().startswith("- minor"):
+            current_bucket = "minor"
+            continue
+        if not line.startswith("-"):
+            continue
+        if "Section" in line:
+            if not any(section_id in line for section_id in section_ids):
+                errors.append(f"Checklist item missing valid section id: {line}")
+        if current_bucket == "minor":
+            if "quote" not in line.lower() and "Quote" not in line:
+                errors.append(f"Minor item missing quote label: {line}")
+    return errors
     subprocess.Popen(
         ["bash", "-lc", command],
         cwd=str(BASE_DIR),
