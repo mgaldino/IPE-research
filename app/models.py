@@ -32,6 +32,29 @@ class DossierKind(str, Enum):
     next_steps = "NEXT_STEPS"
 
 
+class ReviewType(str, Enum):
+    paper = "paper"
+    project = "project"
+
+
+class ProjectLevel(str, Enum):
+    ic = "IC"
+    mestrado = "Mestrado"
+    doutorado = "Doutorado"
+    fapesp = "FAPESP"
+
+
+class ReviewStatus(str, Enum):
+    queued = "queued"
+    completed = "completed"
+    failed = "failed"
+
+
+class ReviewArtifactKind(str, Enum):
+    referee_memo = "REFEREE_MEMO"
+    revision_checklist = "REVISION_CHECKLIST"
+
+
 class ProviderCredential(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     provider: str = Field(index=True)
@@ -112,6 +135,37 @@ class AgentMemo(SQLModel, table=True):
     sender: str
     topic: str
     content: str
+    created_at: datetime = Field(default_factory=utc_now)
+
+
+class Review(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    review_type: ReviewType = Field(index=True)
+    level: Optional[ProjectLevel] = Field(default=None, index=True)
+    status: ReviewStatus = Field(default=ReviewStatus.queued)
+    title: Optional[str] = None
+    domain: Optional[str] = None
+    method_family: Optional[str] = None
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+    notes: Optional[str] = None
+
+
+class ReviewArtifact(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    review_id: int = Field(index=True)
+    kind: ReviewArtifactKind
+    content: str
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+
+
+class ReviewGateResult(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    review_id: int = Field(index=True)
+    gate: int
+    status: GateStatus
+    notes: Optional[str] = None
     created_at: datetime = Field(default_factory=utc_now)
 
 
