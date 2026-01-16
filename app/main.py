@@ -75,6 +75,7 @@ class RunInput(BaseModel):
     idea_count: int = 1
     topic_focus: Optional[str] = None
     literature_query_id: Optional[int] = None
+    use_assessment_seeds: bool = False
 
 
 class GateUpdate(BaseModel):
@@ -216,6 +217,7 @@ async def start_run(payload: RunInput, background_tasks: BackgroundTasks) -> dic
             idea_count=max(1, payload.idea_count),
             topic_focus=payload.topic_focus,
             literature_query_id=payload.literature_query_id,
+            use_assessment_seeds=payload.use_assessment_seeds,
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
@@ -229,7 +231,7 @@ async def start_run(payload: RunInput, background_tasks: BackgroundTasks) -> dic
 @app.get("/api/runs")
 async def list_runs() -> List[dict]:
     with Session(engine) as session:
-        runs = session.exec(select(Run).order_by(Run.created_at.desc())).all()
+        runs = session.exec(select(Run).order_by(Run.created_at.desc()).limit(5)).all()
     return [
         {
             "id": run.id,
@@ -239,6 +241,7 @@ async def list_runs() -> List[dict]:
             "idea_count": run.idea_count,
             "topic_focus": run.topic_focus,
             "literature_query_id": run.literature_query_id,
+            "use_assessment_seeds": run.use_assessment_seeds,
             "created_at": run.created_at.isoformat(),
             "updated_at": run.updated_at.isoformat(),
             "log": run.log,

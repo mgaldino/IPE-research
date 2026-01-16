@@ -2,6 +2,9 @@
 
 Idea pool with tags and rejection reasons.
 
+## Product backlog
+- Add "topic exclusions" for swarm runs (negative topic focus alongside optional topic focus).
+
 ## 2025-09-14 (manual ideation, no LLM)
 
 ### IDEA-001 Payment Rail Dependence and Coercion Credibility

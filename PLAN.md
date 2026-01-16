@@ -15,6 +15,7 @@ Active work queue and checkpoints.
 - Gate 4 auto-recompute from council memo scores/verdicts.
 - LLM-based literature assessment from full text with token-budget selection.
 - Literature assessment injection into idea generation prompts via run selection.
+- Assessment-seeded idea generation (use assessment idea prompts).
 - UI improvements: persistent run form state, LLM assessment controls, full-width works/assessment layout.
 - Provider connectivity testing and model normalization (Gemini/OpenAI).
 

@@ -10,6 +10,7 @@ const state = {
     ideaCount: "",
     topicFocus: "",
     literatureQueryId: "",
+    useAssessmentSeeds: "",
   },
   llmAssessmentState: {},
 };
@@ -134,7 +135,7 @@ async function loadIdeas() {
     const statusPill = idea.status ? `<span class="status-pill">${idea.status}</span>` : "";
     item.innerHTML = `
       <div class="list-title"><strong>${idea.title || "Untitled Idea"}</strong>${statusPill}</div>
-      <div>${idea.lane_primary || "No lane"} | ${idea.breakthrough_type || "No breakthrough type"}</div>
+      <div>Run #${idea.run_id} | ${idea.lane_primary || "No lane"} | ${idea.breakthrough_type || "No breakthrough type"}</div>
       <div>${idea.big_claim || ""}</div>
     `;
     item.addEventListener("click", () => loadIdeaDetail(idea.id));
@@ -706,7 +707,8 @@ function captureRunFormState() {
   const ideaCount = document.getElementById("idea-count");
   const topicFocus = document.getElementById("topic-focus");
   const literatureQuery = document.getElementById("run-literature");
-  if (!runProvider || !runModel || !ideaCount || !topicFocus || !literatureQuery) {
+  const useAssessmentSeeds = document.getElementById("use-assessment-seeds");
+  if (!runProvider || !runModel || !ideaCount || !topicFocus || !literatureQuery || !useAssessmentSeeds) {
     return;
   }
   state.runFormState = {
@@ -715,6 +717,7 @@ function captureRunFormState() {
     ideaCount: ideaCount.value,
     topicFocus: topicFocus.value,
     literatureQueryId: literatureQuery.value,
+    useAssessmentSeeds: useAssessmentSeeds.value,
   };
 }
 
@@ -743,7 +746,8 @@ function restoreRunFormState() {
   const ideaCount = document.getElementById("idea-count");
   const topicFocus = document.getElementById("topic-focus");
   const literatureQuery = document.getElementById("run-literature");
-  if (!runProvider || !runModel || !ideaCount || !topicFocus || !literatureQuery) {
+  const useAssessmentSeeds = document.getElementById("use-assessment-seeds");
+  if (!runProvider || !runModel || !ideaCount || !topicFocus || !literatureQuery || !useAssessmentSeeds) {
     return;
   }
   if (state.runFormState.provider) {
@@ -756,6 +760,9 @@ function restoreRunFormState() {
   topicFocus.value = state.runFormState.topicFocus;
   if (state.runFormState.literatureQueryId) {
     literatureQuery.value = state.runFormState.literatureQueryId;
+  }
+  if (state.runFormState.useAssessmentSeeds) {
+    useAssessmentSeeds.value = state.runFormState.useAssessmentSeeds;
   }
 }
 
@@ -827,6 +834,7 @@ function wireForms() {
     const ideaCount = parseInt(document.getElementById("idea-count").value, 10);
     const topicFocus = document.getElementById("topic-focus").value;
     const literatureQueryId = document.getElementById("run-literature").value;
+    const useAssessmentSeeds = document.getElementById("use-assessment-seeds").value === "yes";
     const message = document.getElementById("run-message");
     try {
       const result = await fetchJSON("/api/runs", {
@@ -837,6 +845,7 @@ function wireForms() {
           idea_count: ideaCount,
           topic_focus: topicFocus || null,
           literature_query_id: literatureQueryId ? parseInt(literatureQueryId, 10) : null,
+          use_assessment_seeds: useAssessmentSeeds,
         }),
       });
       message.textContent = `Run started: #${result.run_id}`;
@@ -893,7 +902,7 @@ function wireForms() {
     });
   }
 
-  ["run-provider", "run-model", "idea-count", "topic-focus", "run-literature"].forEach((id) => {
+  ["run-provider", "run-model", "idea-count", "topic-focus", "run-literature", "use-assessment-seeds"].forEach((id) => {
     const field = document.getElementById(id);
     if (field) {
       field.addEventListener("input", captureRunFormState);

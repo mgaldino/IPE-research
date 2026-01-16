@@ -16,6 +16,10 @@ def _column_exists(session: Session, table: str, column: str) -> bool:
 
 def _ensure_schema() -> None:
     with Session(engine) as session:
+        if _column_exists(session, "run", "use_assessment_seeds") is False:
+            session.exec(
+                text("ALTER TABLE run ADD COLUMN use_assessment_seeds BOOLEAN DEFAULT 0")
+            )
         if _column_exists(session, "run", "literature_query_id") is False:
             session.exec(
                 text("ALTER TABLE run ADD COLUMN literature_query_id INTEGER")

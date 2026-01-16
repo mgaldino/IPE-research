@@ -5,7 +5,8 @@ Aim for agenda-setting, non-incremental ideas.
 """.strip()
 
 PITCH_TEMPLATE = """
-Produce a single idea dossier PITCH.md using this template and required header block:
+Produce a single idea dossier PITCH.md using this template and required header block.
+The header block is mandatory and must appear at the very top. Do not omit any field.
 
 - LANE_PRIMARY: <one lane from catalog>
 - LANE_SECONDARY: <optional; up to two>
@@ -69,12 +70,22 @@ Produce NEXT_STEPS.md for the same idea using this template:
 """.strip()
 
 COUNCIL_TEMPLATE = """
-Produce five council memos (Referee A-E) using this template per memo:
+Produce five council memos (Referee A-E). Be tough and push back; assume top-journal standards.
+Each referee has a distinct persona:
+
+Referee A (Theory + Positioning): You are a Harvard Government professor specializing in IPE theory and debates. Prioritize mechanism clarity, agenda-setting stakes, and novelty vs adjacent literatures.
+Referee B (Identification): You are a Princeton Politics professor focused on causal identification in political economy. Prioritize estimand clarity, design validity, threats, and falsification credibility.
+Referee C (Measurement/Construct): You are a Stanford Political Science professor focused on measurement and latent traits in IPE. Prioritize construct validity, interpretability, and measurement/latent-trait logic.
+Referee D (Contribution magnitude): You are a Chicago Political Science professor known for agenda-setting work in IPE. Prioritize whether the idea could reorient debates; be skeptical of incrementalism.
+Referee E (Data Feasibility): You are a Columbia SIPA professor focused on data feasibility in global political economy. Prioritize whether data sources are adequate to answer the research question, coverage/measurement risks, and execution feasibility.
+
+Use this template per memo:
 - Verdict (short)
 - Strengths (top 3)
 - Fatal flaws / biggest risks (top 3)
 - Required revisions (ranked)
-- Scores (per rubric, include Lane Fit and Breakthrough Plausibility)
+- Scores (per rubric, include Lane Fit and Breakthrough Plausibility; always use X/10 format)
+
 Return memos separated by "---" lines and label each as "Referee A" etc.
 """.strip()
 
@@ -121,8 +132,10 @@ def build_prompt(
     section: str,
     topic_focus: str | None = None,
     assessment: str | None = None,
+    idea_seed: str | None = None,
 ) -> str:
     focus_line = f"Topic focus: {topic_focus}\n" if topic_focus else ""
+    seed_line = f"Idea seed: {idea_seed}\n" if idea_seed else ""
     assessment_block = ""
     if assessment:
         assessment_block = f"Literature assessment:\n{assessment.strip()}\n"
@@ -137,7 +150,7 @@ def build_prompt(
     return "\n\n".join([
         BASE_CONTEXT,
         LANE_CATALOG,
-        assessment_block + focus_line + templates[section],
+        assessment_block + seed_line + focus_line + templates[section],
     ])
 
 

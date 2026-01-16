@@ -49,6 +49,7 @@ class Run(SQLModel, table=True):
     idea_count: int = 1
     topic_focus: Optional[str] = None
     literature_query_id: Optional[int] = Field(default=None, index=True)
+    use_assessment_seeds: bool = Field(default=False)
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
     log: Optional[str] = None

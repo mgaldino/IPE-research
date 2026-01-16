@@ -46,6 +46,18 @@ Open the UI:
 3) (Optional) Run LLM assessment for a literature query
 4) Start swarm and review dossiers
 
+## Run form fields
+- Idea count: how many idea dossiers to generate in a single swarm run.
+- Topic focus: optional hint to steer generation toward a specific IPE topic or lane.
+- Use assessment idea prompts: if enabled, seed each idea from the assessment’s “idea prompts” section.
+
+## Council personas
+- Referee A: theory + positioning
+- Referee B: identification
+- Referee C: measurement/construct validity
+- Referee D: magnitude of contribution / agenda-setting
+- Referee E: data feasibility
+
 ## Tests
 ```bash
 . .venv/bin/activate
