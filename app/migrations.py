@@ -35,13 +35,15 @@ def _applied_versions(session: Session) -> set[int]:
 
 def _record_migration(session: Session, migration: Migration) -> None:
     applied_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    session.exec(
-        text(
-            "INSERT INTO schema_migrations (version, name, applied_at) "
-            "VALUES (:version, :name, :applied_at)"
-        ),
-        {"version": migration.version, "name": migration.name, "applied_at": applied_at},
+    statement = text(
+        "INSERT INTO schema_migrations (version, name, applied_at) "
+        "VALUES (:version, :name, :applied_at)"
+    ).bindparams(
+        version=migration.version,
+        name=migration.name,
+        applied_at=applied_at,
     )
+    session.exec(statement)
 
 
 def _migrations() -> Iterable[Migration]:
