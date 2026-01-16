@@ -117,6 +117,58 @@ Provide:
 Do not claim new empirical results.
 """.strip()
 
+REVIEW_CONTEXT = """
+You are a senior APSR-level referee. Be rigorous, skeptical, and constructive.
+You must stay at design-only level; do not claim new empirical results.
+If the paper is theoretical only, focus on theory and contribution.
+If the paper is empirical, cover theory + design + evidence.
+""".strip()
+
+REVIEW_PAPER_TEMPLATE = """
+Write a referee report for a paper. Follow this exact format:
+
+REFEREE_MEMO (350-500 words)
+- Summary (2-3 sentences)
+- Contribution and novelty
+- Design/ID assessment (if empirical)
+- Evidence/measurement assessment (if empirical)
+- Verdict: Reject / Major Revise / Revise
+- Overall score: X/10
+
+REVISION_CHECKLIST
+- Major issues (3 items)
+  - Each item must include: Section ID, Issue, Suggested fix
+- Minor issues (3 items)
+  - Each item must include: Section ID, Issue, Quote (<=20 words), Suggested fix
+
+Rules:
+- Use section IDs exactly as provided.
+- Minor issues must include a quote from the text.
+- Major issues should be grounded, but quotes are optional.
+""".strip()
+
+REVIEW_PROJECT_TEMPLATE = """
+Write a referee report for a research project proposal. Follow this exact format:
+
+REFEREE_MEMO (350-500 words)
+- Summary (2-3 sentences)
+- Contribution and novelty
+- Design/ID assessment (if empirical)
+- Evidence/measurement assessment (if empirical)
+- Verdict: Reject / Major Revise / Revise
+- Overall score: X/10
+
+REVISION_CHECKLIST
+- Major issues (3 items)
+  - Each item must include: Section ID, Issue, Suggested fix
+- Minor issues (3 items)
+  - Each item must include: Section ID, Issue, Quote (<=20 words), Suggested fix
+
+Rules:
+- Use section IDs exactly as provided.
+- Minor issues must include a quote from the text.
+- Major issues should be grounded, but quotes are optional.
+""".strip()
 LANE_CATALOG = """
 Lane catalog:
 1) Financial Statecraft and Monetary Power
@@ -233,4 +285,34 @@ def build_council_prompt_with_dossier(
         base,
         "Review the dossier below. Ground critiques in the specific design and claims provided.",
         dossier_text,
+    ])
+
+
+def build_review_prompt(
+    *,
+    review_type: str,
+    level: str | None,
+    title: str | None,
+    domain: str | None,
+    method_family: str | None,
+    sections: list[dict],
+) -> str:
+    template = REVIEW_PAPER_TEMPLATE if review_type == "paper" else REVIEW_PROJECT_TEMPLATE
+    header_lines = [
+        f"Review type: {review_type}",
+        f"Level: {level or 'n/a'}",
+        f"Title: {title or 'Untitled'}",
+        f"Domain: {domain or 'n/a'}",
+        f"Method family: {method_family or 'n/a'}",
+    ]
+    section_lines = ["Sections:"]
+    for section in sections:
+        section_lines.append(
+            f"- {section['section_id']} {section['title']} (p{section['page_start']}-{section['page_end']}): {section['excerpt']}"
+        )
+    return "\n\n".join([
+        REVIEW_CONTEXT,
+        "\n".join(header_lines),
+        "\n".join(section_lines),
+        template,
     ])

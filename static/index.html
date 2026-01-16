@@ -187,9 +187,17 @@
           <label for="review-method">Method family</label>
           <input type="text" id="review-method" placeholder="DiD / SCM / Qualitative" />
 
+          <label for="review-provider">Provider</label>
+          <select id="review-provider"></select>
+
+          <label for="review-model">Model</label>
+          <input type="text" id="review-model" placeholder="Default" />
+
           <label for="review-pdf">Attach PDF (existing file in reviews/pdfs/&lt;id&gt;/)</label>
           <input type="text" id="review-pdf" placeholder="filename.pdf" />
           <button type="button" id="review-attach">Attach PDF</button>
+
+          <button type="button" id="review-run">Run Review (LLM)</button>
 
           <button type="submit">Create Review</button>
           <div id="review-message" class="hint"></div>

@@ -37,6 +37,7 @@ from .models import (
     ReviewArtifactKind,
     ReviewGateResult,
     ReviewSection,
+    ReviewStatus,
     ReviewType,
     Run,
     RunStatus,
@@ -50,6 +51,7 @@ from .prompts import (
     build_council_prompt_with_dossier,
     build_literature_paper_prompt,
     build_literature_synthesis_prompt,
+    build_review_prompt,
 )
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -98,6 +100,11 @@ class ReviewInput(BaseModel):
 
 class ReviewAttachPdfInput(BaseModel):
     filename: str
+
+
+class ReviewRunInput(BaseModel):
+    provider: str
+    model: Optional[str] = None
 
 
 class GateUpdate(BaseModel):
@@ -486,6 +493,82 @@ async def attach_pdf_to_review(review_id: int, payload: ReviewAttachPdfInput) ->
     return {"review_id": review_id, "sections": len(sections)}
 
 
+@app.post("/api/reviews/{review_id}/run")
+async def run_review(review_id: int, payload: ReviewRunInput) -> dict:
+    if getattr(app.state, "passphrase", None) is None:
+        raise HTTPException(status_code=400, detail="Unlock session with passphrase first")
+    provider_impl = PROVIDERS.get(payload.provider)
+    if not provider_impl:
+        raise HTTPException(status_code=400, detail="Unknown provider")
+    model = payload.model or DEFAULT_MODELS.get(payload.provider)
+    if not model:
+        raise HTTPException(status_code=400, detail="Model required for provider")
+
+    with Session(engine) as session:
+        review = session.get(Review, review_id)
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+        sections = session.exec(
+            select(ReviewSection).where(ReviewSection.review_id == review_id)
+        ).all()
+        if not sections:
+            raise HTTPException(status_code=400, detail="No sections indexed for review")
+        credential = session.exec(
+            select(ProviderCredential)
+            .where(ProviderCredential.provider == payload.provider)
+            .order_by(ProviderCredential.created_at.desc())
+        ).first()
+        if not credential:
+            raise HTTPException(status_code=400, detail="Missing credentials for provider")
+        api_key = decrypt_secret(app.state.passphrase, credential.api_key_encrypted, credential.salt)
+
+        prompt = build_review_prompt(
+            review_type=review.review_type.value,
+            level=review.level.value if review.level else None,
+            title=review.title,
+            domain=review.domain,
+            method_family=review.method_family,
+            sections=[
+                {
+                    "section_id": section.section_id,
+                    "title": section.title,
+                    "page_start": section.page_start,
+                    "page_end": section.page_end,
+                    "excerpt": section.excerpt,
+                }
+                for section in sections
+            ],
+        )
+        response = await provider_impl.generate(prompt, model, api_key)
+        memo, checklist = _split_review_output(response.content)
+
+        session.exec(
+            ReviewArtifact.__table__.delete().where(ReviewArtifact.review_id == review_id)
+        )
+        session.add_all([
+            ReviewArtifact(
+                review_id=review_id,
+                kind=ReviewArtifactKind.referee_memo,
+                content=memo,
+            ),
+            ReviewArtifact(
+                review_id=review_id,
+                kind=ReviewArtifactKind.revision_checklist,
+                content=checklist,
+            ),
+        ])
+        review.status = ReviewStatus.completed
+        review.updated_at = datetime.now(timezone.utc)
+        session.add(review)
+        session.commit()
+        stored_artifacts = session.exec(
+            select(ReviewArtifact).where(ReviewArtifact.review_id == review_id)
+        ).all()
+    review_dir = BASE_DIR / "reviews" / str(review_id)
+    write_review_artifacts(review_dir, stored_artifacts)
+    return {"review_id": review_id, "status": "completed"}
+
+
 @app.put("/api/ideas/{idea_id}/gates/{gate_id}")
 async def update_gate(idea_id: int, gate_id: int, payload: GateUpdate) -> dict:
     with Session(engine) as session:
@@ -518,6 +601,16 @@ def _restart_server(port: int) -> None:
         f"sleep 1; nohup {sys.executable} -m uvicorn app.main:app "
         f"--host 127.0.0.1 --port {port} >> {log_path} 2>&1 &"
     )
+
+
+def _split_review_output(content: str) -> tuple[str, str]:
+    marker = "REVISION_CHECKLIST"
+    if marker in content:
+        before, after = content.split(marker, 1)
+        memo = before.strip()
+        checklist = f"{marker}{after}".strip()
+        return memo, checklist
+    return content.strip(), "REVISION_CHECKLIST\n- No checklist provided."
     subprocess.Popen(
         ["bash", "-lc", command],
         cwd=str(BASE_DIR),

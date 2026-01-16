@@ -45,8 +45,12 @@ async function loadProviders() {
   const providerSelects = [
     document.getElementById("provider"),
     document.getElementById("run-provider"),
+    document.getElementById("review-provider"),
   ];
   providerSelects.forEach((select) => {
+    if (!select) {
+      return;
+    }
     select.innerHTML = "";
     data.forEach((provider) => {
       const option = document.createElement("option");
@@ -77,6 +81,13 @@ async function loadProviders() {
     document.getElementById("run-model").placeholder = selected.default_model || "Default";
     if (!runModelInput.value && selected.default_model) {
       runModelInput.value = selected.default_model;
+    }
+    const reviewModelInput = document.getElementById("review-model");
+    if (reviewModelInput) {
+      reviewModelInput.placeholder = selected.default_model || "Default";
+      if (!reviewModelInput.value && selected.default_model) {
+        reviewModelInput.value = selected.default_model;
+      }
     }
   }
 }
@@ -1000,6 +1011,7 @@ function wireForms() {
     const typeSelect = document.getElementById("review-type");
     typeSelect.addEventListener("change", updateReviewLevelVisibility);
     const attachButton = document.getElementById("review-attach");
+    const runButton = document.getElementById("review-run");
 
     reviewForm.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -1052,6 +1064,32 @@ function wireForms() {
             body: JSON.stringify({ filename }),
           });
           message.textContent = "PDF attached and sections indexed.";
+          await loadReviewDetail(state.selectedReviewId);
+        } catch (error) {
+          message.textContent = error.message;
+        }
+      });
+    }
+
+    if (runButton) {
+      runButton.addEventListener("click", async () => {
+        const message = document.getElementById("review-message");
+        message.textContent = "";
+        if (!state.selectedReviewId) {
+          message.textContent = "Select a review first.";
+          return;
+        }
+        const provider = document.getElementById("review-provider").value;
+        const model = document.getElementById("review-model").value;
+        try {
+          await fetchJSON(`/api/reviews/${state.selectedReviewId}/run`, {
+            method: "POST",
+            body: JSON.stringify({
+              provider,
+              model: model || null,
+            }),
+          });
+          message.textContent = "Review completed.";
           await loadReviewDetail(state.selectedReviewId);
         } catch (error) {
           message.textContent = error.message;

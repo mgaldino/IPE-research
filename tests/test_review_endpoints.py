@@ -71,6 +71,18 @@ class ReviewEndpointsTest(unittest.TestCase):
         payload = response.json()
         self.assertGreaterEqual(len(payload), 2)
 
+    def test_run_review_requires_unlock(self) -> None:
+        response = self.client.post(
+            "/api/reviews",
+            json={"review_type": "paper", "title": "Paper C"},
+        )
+        review_id = response.json()["review_id"]
+        run = self.client.post(
+            f"/api/reviews/{review_id}/run",
+            json={"provider": "openai", "model": "gpt-4o-mini"},
+        )
+        self.assertEqual(run.status_code, 400)
+
 
 if __name__ == "__main__":
     unittest.main()
