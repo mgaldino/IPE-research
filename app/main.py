@@ -633,14 +633,16 @@ def _split_review_output(content: str) -> tuple[str, str]:
 
 def _validate_review_output(checklist: str, section_ids: list[str]) -> list[str]:
     errors = []
-    checklist_lines = [line.strip() for line in checklist.splitlines() if line.strip()]
+    checklist_lines = [line.rstrip() for line in checklist.splitlines() if line.strip()]
     if not any("Major" in line for line in checklist_lines):
         errors.append("Checklist missing Major issues section.")
     if not any("Minor" in line for line in checklist_lines):
         errors.append("Checklist missing Minor issues section.")
 
     current_bucket = None
-    for line in checklist_lines:
+    pending_minor = None
+    for raw_line in checklist_lines:
+        line = raw_line.strip()
         if line.lower().startswith("- major"):
             current_bucket = "major"
             continue
@@ -648,13 +650,22 @@ def _validate_review_output(checklist: str, section_ids: list[str]) -> list[str]
             current_bucket = "minor"
             continue
         if not line.startswith("-"):
+            if current_bucket == "minor" and pending_minor:
+                if line.lower().startswith("quote:"):
+                    pending_minor = None
             continue
+        if current_bucket == "minor" and pending_minor:
+            errors.append(f"Minor item missing Quote line: {pending_minor}")
+            pending_minor = None
         if "Section" in line:
             if not any(section_id in line for section_id in section_ids):
                 errors.append(f"Checklist item missing valid section id: {line}")
         if current_bucket == "minor":
-            if "quote" not in line.lower() and "Quote" not in line:
-                errors.append(f"Minor item missing quote label: {line}")
+            if "quote" in line.lower():
+                continue
+            pending_minor = line
+    if pending_minor:
+        errors.append(f"Minor item missing Quote line: {pending_minor}")
     return errors
     subprocess.Popen(
         ["bash", "-lc", command],

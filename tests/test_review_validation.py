@@ -13,7 +13,7 @@ class ReviewValidationTest(unittest.TestCase):
             "- Section: S2 Issue: Vague scope Suggested fix: Tighten scope.",
         ])
         errors = _validate_review_output(checklist, ["S1", "S2"])
-        self.assertTrue(any("Minor item missing quote" in error for error in errors))
+        self.assertTrue(any("Minor item missing Quote line" in error for error in errors))
 
     def test_validation_accepts_quote(self) -> None:
         checklist = "\n".join([
@@ -21,7 +21,8 @@ class ReviewValidationTest(unittest.TestCase):
             "- Major issues (3 items)",
             "- Section: S1 Issue: Missing theory Suggested fix: Add theory.",
             "- Minor issues (3 items)",
-            "- Section: S2 Issue: Vague scope Quote: \"test\" Suggested fix: Tighten scope.",
+            "- Section: S2 Issue: Vague scope Suggested fix: Tighten scope.",
+            "Quote: \"test\"",
         ])
         errors = _validate_review_output(checklist, ["S1", "S2"])
         self.assertFalse(errors)
