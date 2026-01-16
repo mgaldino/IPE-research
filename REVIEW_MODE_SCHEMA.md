@@ -25,25 +25,25 @@ Scope: IPE-only. Reuse existing council personas and design-only constraints.
 - Each section: text, page range, and short excerpt list (for quoting).
 
 ## Review artifacts (outputs)
-1) **Referee Memo** (fixed template)
-   - Summary (2–4 sentences)
+1) **Referee Memo** (fixed template, 350–500 words)
+   - Summary (2–3 sentences)
    - Contribution + novelty assessment
-   - Design/ID assessment (assumptions, threats)
-   - Measurement/construct validity (if relevant)
-   - Feasibility and clarity
+   - Design/ID assessment (if empirical)
+   - Evidence/measurement assessment (if empirical)
    - Verdict (reject / revise / major revise)
+   - Overall score (X/10)
 
 2) **Revision Checklist**
-   - Ranked list of required changes
-   - Each item includes:
-     - Section ID (e.g., S4)
-     - Evidence snippet (short quote or paraphrase)
-     - Why it matters
-     - Minimal fix
+   - Major issues (3 items)
+     - Section ID, Issue, Suggested fix
+   - Minor issues (3 items)
+     - Section ID, Issue, Quote (<=20 words), Suggested fix
+     - Quote must be on its own line labeled `Quote:`
 
 ## Grounding rules (non-negotiable)
 - Every critique must cite a section ID.
-- Major critiques must include a short quote or paraphrase from the paper.
+- Minor critiques must include a short quote labeled `Quote:`.
+- Major critiques should be grounded; quotes are optional.
 - No claims about results unless explicitly stated in the text.
 - No new theory or execution beyond design-level assessment.
 
@@ -60,6 +60,10 @@ Scope: IPE-only. Reuse existing council personas and design-only constraints.
   - Mestrado: emphasize coherent theory + feasible design.
   - Doutorado: emphasize agenda-setting contribution + identification depth.
   - FAPESP: emphasize feasibility, policy relevance, and execution risk.
+
+## Validation behavior
+- If the LLM output violates format requirements (missing Section IDs or Quote lines),
+  `VALIDATION_NOTES` are appended to the checklist and the UI displays a warning.
 
 ## Success signals (for harness)
 - Rubric coverage >= 90% of required fields.

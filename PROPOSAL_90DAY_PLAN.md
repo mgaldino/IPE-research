@@ -1,5 +1,7 @@
 # 90-Day Plan: Review Mode v1 (IPE-only) + Grounding
 
+Status: Review mode v1 delivered (paper/project, PDF ingestion, grounded artifacts, LLM run, validation warnings). Remaining items focus on evaluation harness, UI PDF upload, and stricter output enforcement.
+
 Goal: Ship a trusted Review mode within the existing app, without building domain-pack infrastructure yet.
 Success is measured by concrete improvements in review quality and traceability, not by breadth.
 

@@ -1,6 +1,6 @@
 # IPE Breakthrough Idea Swarm
 
-Local web app to orchestrate a swarm of AI agents that generate, vet, and package breakthrough International Political Economy (IPE) research ideas. The system focuses on design-only plans (DiD/SCM/Shift-Share or ideal points) and produces structured idea dossiers plus council-style referee memos.
+Local web app to orchestrate a swarm of AI agents that generate, vet, and package breakthrough International Political Economy (IPE) research ideas, and to run APSR-level reviews of papers or research proposals. The system focuses on design-only plans (DiD/SCM/Shift-Share or ideal points) and produces structured idea dossiers plus council-style referee memos and revision checklists.
 
 ## Features
 - Idea dossier generation (PITCH, DESIGN, DATA_PLAN, POSITIONING, NEXT_STEPS)
@@ -8,6 +8,9 @@ Local web app to orchestrate a swarm of AI agents that generate, vet, and packag
 - Literature pipeline (metadata fetch, PDF ingest, assessments)
 - LLM-based literature assessment (optional) using provider credentials
 - Resubmission workflow with dossier version snapshots and council rounds
+- Review mode for papers and projects (Referee Memo + Revision Checklist)
+- Review PDF ingestion with section indexing and grounding
+- LLM-driven review generation with validation notes when formatting breaks
 
 ## Requirements
 - Python 3.11+
@@ -45,12 +48,20 @@ Open the UI:
 2) Save provider credentials (OpenAI/Anthropic/Gemini)
 3) (Optional) Run LLM assessment for a literature query
 4) Start swarm and review dossiers
+5) Create a Review, attach a PDF, and run Review (LLM)
 
 ## Run form fields
 - Idea count: how many idea dossiers to generate in a single swarm run.
 - Topic focus: optional hint to steer generation toward a specific IPE topic or lane.
 - Exclude topics: optional list of topics to avoid (separate with ';').
 - Use assessment idea prompts: if enabled, seed each idea from the assessment’s “idea prompts” section.
+
+## Review workflow
+1) Create a Review (paper or project level).
+2) Put a PDF in `reviews/pdfs/<review_id>/` and attach it by filename in the UI.
+3) Run Review (LLM) to generate a Referee Memo and Revision Checklist.
+
+Validation notes are appended when output formatting fails (e.g., missing Quote lines for minor issues).
 
 ## Council personas
 - Referee A: theory + positioning
@@ -63,6 +74,19 @@ Open the UI:
 ```bash
 . .venv/bin/activate
 pytest
+```
+
+## Frozen MVP (tagged)
+The stable MVP is tagged as `mvp-v1`. To run it:
+```bash
+git checkout mvp-v1
+. .venv/bin/activate
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+```
+
+To return to current development:
+```bash
+git checkout expansion
 ```
 
 ## Notes

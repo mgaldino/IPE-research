@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-01-16
+- Added review mode (paper/project) with PDF ingestion, section indexing, and grounded artifacts.
+- Added LLM review run with APSR-level prompts and validation warnings.
+- Added review UI (create, attach PDF, run review, view sections and artifacts).
+- Added schema migrations table and artifact writer helpers.
+- Added tests for review models, endpoints, prompts, parsing, and validation.
+
 ## 2025-02-14
 - Expanded `EVAL_RUBRIC.md` with Lane Fit and Breakthrough Plausibility thresholds.
 - Expanded `DESIGN_PLAYBOOK.md` with concrete standards for DiD/SCM/Shift-Share/Ideal points.

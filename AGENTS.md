@@ -1,7 +1,7 @@
 # AGENTS.md — IPE Breakthrough Idea Swarm (No Execution)
 
 ## 0) Mission
-Build a local web app that orchestrates a swarm of AI agents to generate and vet **International Political Economy (IPE)** research ideas that are:
+Build a local web app that orchestrates a swarm of AI agents to generate and vet **International Political Economy (IPE)** research ideas, and to produce APSR-level reviews of papers and research projects. The system’s outputs are design-only and do not execute analysis.
 - **Theoretically ambitious** (agenda-setting, not incremental).
 - **Empirically serious** at the level of *design* (credible identification/measurement plans), but **not executed**.
 - Explicitly aligned with:
@@ -26,6 +26,10 @@ For each candidate idea, the app must produce a structured “idea dossier” co
 6) **Council-style referee memos** with scores and required revisions.
 7) **Next-step checklist for the PI** (what to do to execute later, if chosen).
 
+For each review (paper or project), the app must produce:
+1) **Referee Memo** (APSR-level, 350–500 words) with summary, contribution assessment, design/evidence assessment (when empirical), verdict, and overall score.
+2) **Revision Checklist** with 3 major and 3 minor issues, grounded to section IDs; minors must include quotes labeled `Quote:`.
+
 ---
 
 ## 2) Hard constraints (non-negotiable)
@@ -37,6 +41,7 @@ For each candidate idea, the app must produce a structured “idea dossier” co
 - Causal questions must be structured around **DiD**, **SCM**, or **Shift-Share**.
 - Descriptive questions must be structured around **ideal point estimation** (or closely related latent trait models) from behavioral/vote-like data.
 - Outputs must remain at the level of: *design spec + diagnostics/falsification plan + feasible data sources*.
+For Review mode, empirical papers must be evaluated on theory + design + evidence; theoretical papers focus on theory + contribution.
 
 ### 2.3 Ambition requirement
 Ideas must aim for at least one:
@@ -185,6 +190,10 @@ Per idea dossier:
 - `ideas/<idea_id>/POSITIONING.md`
 - `ideas/<idea_id>/council/` (review memos + scores)
 - `ideas/<idea_id>/NEXT_STEPS.md`
+
+Per review dossier:
+- `reviews/<review_id>/REFEREE_MEMO.md`
+- `reviews/<review_id>/REVISION_CHECKLIST.md`
 
 ---
 
@@ -380,6 +389,19 @@ If novelty cannot be articulated, tag `incremental` and deprioritize.
 - Most expensive uncertainty to resolve first
 - “Fast falsification” plan (how to kill quickly if wrong)
 
+### 10.6 Review artifacts
+**Referee Memo (paper/project)**
+- Summary (2–3 sentences)
+- Contribution + novelty assessment
+- Design/ID assessment (if empirical)
+- Evidence/measurement assessment (if empirical)
+- Verdict (reject / major revise / revise)
+- Overall score (X/10)
+
+**Revision Checklist**
+- Major issues (3 items): Section ID, Issue, Suggested fix
+- Minor issues (3 items): Section ID, Issue, Quote (<=20 words, labeled `Quote:`), Suggested fix
+
 ---
 
 ## 11) Scoring rubric (idea-level thresholds)
@@ -422,6 +444,12 @@ For each idea, the browser UI must show:
 - Council scorecard + memos
 - Revision queue (actionable next steps)
 - Tags: topic, design family, data dependency, novelty lane, risk level
+
+For each review, the browser UI must show:
+- Review metadata (type, level, domain, method family)
+- Section index (IDs + excerpts)
+- Referee Memo + Revision Checklist
+- Validation warnings when formatting fails
 
 The orchestration layer must enforce gates (no skipping without PI override).
 
