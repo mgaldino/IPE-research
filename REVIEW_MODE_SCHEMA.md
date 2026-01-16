@@ -7,7 +7,10 @@ Scope: IPE-only. Reuse existing council personas and design-only constraints.
 - Optional metadata:
   - Target outlet tier (e.g., top-5, field journal)
   - Contribution type (theory/mechanism, identification, measurement)
-  - Method family (DiD/SCM/Shift-Share/Ideal points/other)
+  - Method family (DiD/SCM/Shift-Share/Ideal points/qualitative/mixed/other)
+  - Review type: `paper` or `project`
+  - If `project`: level = `IC` | `Mestrado` | `Doutorado` | `FAPESP`
+  - If `paper`: level is ignored (single standard)
 
 ## Ingestion output (internal)
 - Structured sections with stable IDs:
@@ -49,6 +52,14 @@ Scope: IPE-only. Reuse existing council personas and design-only constraints.
 - Gate R2: Design credibility (>= threshold)
 - Gate R3: Measurement/construct validity (if applicable)
 - Gate R4: Feasibility/clarity
+
+## Review-type distinctions
+- **Paper**: single standard; output targets a journal-style referee report.
+- **Project**: level-specific expectations in the Referee Memo and Checklist
+  - IC: emphasize clarity, feasibility, and scope discipline.
+  - Mestrado: emphasize coherent theory + feasible design.
+  - Doutorado: emphasize agenda-setting contribution + identification depth.
+  - FAPESP: emphasize feasibility, policy relevance, and execution risk.
 
 ## Success signals (for harness)
 - Rubric coverage >= 90% of required fields.

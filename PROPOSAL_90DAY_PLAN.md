@@ -9,6 +9,9 @@ Milestone: Review mode workflow live, using current council personas and strict 
 Key deliverables:
 - Review workflow (UI + API) parallel to Ideation workflow.
 - Input: PDF + optional metadata (target journal tier, contribution type, method).
+- Support review types:
+  - Paper: single standard, journal-style referee report.
+  - Project: IC / Mestrado / Doutorado / FAPESP expectations.
 - Output: “Referee Memo + Revision Checklist” artifact with a fixed template.
 - Gate logic for Review mode (basic pass/fail + scores).
 
