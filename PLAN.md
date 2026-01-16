@@ -23,6 +23,7 @@ Active work queue and checkpoints.
 - IDEA-006 is at Gate 4 with council memos; revisions pending.
 - LIO query (ID 2) rebuilt and used for anchors; per-query PDFs now supported.
 - Live LLM assessment and idea generation runs using OpenAI gpt-5-nano or Gemini 2.5-flash.
+- Review mode v1 proposal (IPE-only) and grounding requirements drafted.
 
 ## Next pending items
 - Add a migration-safe schema/versioning approach beyond ad hoc ALTERs.
@@ -31,6 +32,10 @@ Active work queue and checkpoints.
 - Add PI decision logging in DECISIONS.md and UI shortcuts.
 - Add UI indicator for assessment source (heuristic vs LLM) and last-run timestamp.
 - Tighten council scoring compliance (full rubric coverage and more conservative scoring).
+- Ship Review mode v1 in IPE-only scope (Referee Memo + Revision Checklist).
+- Implement PDF-to-structured-text ingestion with section IDs and evidence snippets.
+- Add grounding rules: every critique must cite section ID + quote/paraphrase.
+- Build a small evaluation harness (15–30 artifacts) with rubric-based regression checks.
 
 ## Backlog (project-level)
 - Dossier export improvements (batch export, zip per idea).
