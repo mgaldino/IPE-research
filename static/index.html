@@ -29,7 +29,7 @@
             <h2>Session Control</h2>
             <span class="panel-meta">Security and runtime</span>
           </div>
-          <form id="unlock-form" class="form-row">
+          <form id="unlock-form" class="form-row compact-row">
             <input type="password" id="passphrase" placeholder="Enter passphrase" required />
             <button type="submit">Unlock</button>
           </form>
@@ -213,31 +213,30 @@
 
         <section class="panel panel--runs" style="--panel-index: 2;">
           <div class="panel-header">
-            <h2>Runs and Ideas</h2>
-            <span class="panel-meta">Queue, status, and gates</span>
+            <h2>Runs</h2>
+            <span class="panel-meta">Queue and status</span>
           </div>
-          <div class="split">
-            <div>
-              <h3>Runs</h3>
-              <div id="run-list" class="list"></div>
-            </div>
-            <div>
-              <h3>Ideas</h3>
-              <div class="action-row">
-                <label for="idea-status-filter">Status</label>
-                <select id="idea-status-filter">
-                  <option value="all">All</option>
-                  <option value="resubmitted">Resubmitted</option>
-                  <option value="none">Unassigned</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div id="idea-list" class="list"></div>
-            </div>
-          </div>
+          <div id="run-list" class="list scrollable"></div>
         </section>
 
-        <section class="panel panel--idea" style="--panel-index: 3;">
+        <section class="panel panel--ideas" style="--panel-index: 3;">
+          <div class="panel-header">
+            <h2>Ideas</h2>
+            <span class="panel-meta">Filters and selection</span>
+          </div>
+          <div class="action-row">
+            <label for="idea-status-filter">Status</label>
+            <select id="idea-status-filter">
+              <option value="all">All</option>
+              <option value="resubmitted">Resubmitted</option>
+              <option value="none">Unassigned</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div id="idea-list" class="list scrollable"></div>
+        </section>
+
+        <section class="panel panel--idea" style="--panel-index: 4;">
           <div class="panel-header">
             <h2>Idea Dossier</h2>
             <span class="panel-meta">Pitches, designs, and memos</span>

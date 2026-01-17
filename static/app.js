@@ -771,9 +771,37 @@ async function loadIdeaDetail(ideaId) {
   versionSection.appendChild(versionDetail);
   detail.appendChild(versionSection);
 
+  const compactKinds = new Set(["PITCH", "DATA_PLAN", "POSITIONING", "NEXT_STEPS"]);
   data.dossier_parts.forEach((part) => {
     const block = document.createElement("div");
-    block.innerHTML = `<h4>${part.kind}</h4><pre>${part.content}</pre>`;
+    block.className = "dossier-block";
+
+    const headerRow = document.createElement("div");
+    headerRow.className = "dossier-header";
+    const title = document.createElement("h4");
+    title.textContent = part.kind;
+    headerRow.appendChild(title);
+
+    const content = document.createElement("div");
+    content.className = "dossier-content";
+    content.textContent = part.content;
+
+    if (compactKinds.has(part.kind)) {
+      content.classList.add("collapsed");
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "button-ghost";
+      toggle.textContent = "Expand";
+      toggle.addEventListener("click", () => {
+        const expanded = content.classList.toggle("expanded");
+        content.classList.toggle("collapsed", !expanded);
+        toggle.textContent = expanded ? "Collapse" : "Expand";
+      });
+      headerRow.appendChild(toggle);
+    }
+
+    block.appendChild(headerRow);
+    block.appendChild(content);
     detail.appendChild(block);
   });
 
