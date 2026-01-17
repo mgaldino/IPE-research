@@ -58,7 +58,7 @@ Open the UI:
 
 ## Review workflow
 1) Create a Review (paper or project level).
-2) Put a PDF in `reviews/pdfs/<review_id>/` and attach it by filename in the UI.
+2) Upload a PDF in the UI or drop it into `reviews/pdfs/<review_id>/`, then attach by filename.
 3) Run Review (LLM) to generate a Referee Memo and Revision Checklist.
 
 Validation notes are appended when output formatting fails (e.g., missing Quote lines for minor issues).

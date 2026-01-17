@@ -447,6 +447,7 @@ For each idea, the browser UI must show:
 
 For each review, the browser UI must show:
 - Review metadata (type, level, domain, method family)
+- Language selection (EN/PT)
 - Section index (IDs + excerpts)
 - Referee Memo + Revision Checklist
 - Validation warnings when formatting fails
