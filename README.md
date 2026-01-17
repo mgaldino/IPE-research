@@ -76,6 +76,12 @@ Validation notes are appended when output formatting fails (e.g., missing Quote 
 pytest
 ```
 
+## Review harness
+```bash
+. .venv/bin/activate
+python scripts/run_review_harness.py
+```
+
 ## Frozen MVP (tagged)
 The stable MVP is tagged as `mvp-v1`. To run it:
 ```bash
