@@ -158,12 +158,14 @@ p {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 20px;
+  align-items: start;
 }
 
 .column {
   display: grid;
   gap: 20px;
   min-width: 0;
+  align-content: start;
 }
 
 .panel {
@@ -176,6 +178,7 @@ p {
   transform: translateY(18px);
   animation: rise 0.6s ease forwards;
   animation-delay: calc(var(--panel-index, 1) * 80ms);
+  align-self: start;
 }
 
 .panel--session {
@@ -306,6 +309,7 @@ button:hover {
   background: #f8f5ee;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  word-break: break-word;
 }
 
 .list-item:hover {
@@ -355,6 +359,7 @@ button:hover {
   padding: 16px;
   border-radius: var(--radius-sm);
   background: var(--panel-strong);
+  overflow: hidden;
 }
 
 .full-width {
@@ -369,6 +374,7 @@ button:hover {
   padding: 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
+  overflow-wrap: anywhere;
 }
 
 .dossier-block {
@@ -390,6 +396,7 @@ button:hover {
   padding: 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
+  overflow-wrap: anywhere;
 }
 
 .dossier-content.collapsed {
