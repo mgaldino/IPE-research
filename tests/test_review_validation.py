@@ -1,6 +1,6 @@
 import unittest
 
-from app.main import _validate_review_output
+from app.review_validation import validate_review_output
 
 
 class ReviewValidationTest(unittest.TestCase):
@@ -12,7 +12,7 @@ class ReviewValidationTest(unittest.TestCase):
             "- Minor issues (3 items)",
             "- Section: S2 Issue: Vague scope Suggested fix: Tighten scope.",
         ])
-        errors = _validate_review_output(checklist, ["S1", "S2"])
+        errors = validate_review_output(checklist, ["S1", "S2"])
         self.assertTrue(any("Minor item missing Quote line" in error for error in errors))
 
     def test_validation_accepts_quote(self) -> None:
@@ -24,7 +24,7 @@ class ReviewValidationTest(unittest.TestCase):
             "- Section: S2 Issue: Vague scope Suggested fix: Tighten scope.",
             "Quote: \"test\"",
         ])
-        errors = _validate_review_output(checklist, ["S1", "S2"])
+        errors = validate_review_output(checklist, ["S1", "S2"])
         self.assertFalse(errors)
 
 

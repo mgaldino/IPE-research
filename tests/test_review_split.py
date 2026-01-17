@@ -1,6 +1,6 @@
 import unittest
 
-from app.main import _split_review_output
+from app.review_validation import split_review_output
 
 
 class ReviewSplitTest(unittest.TestCase):
@@ -11,7 +11,7 @@ class ReviewSplitTest(unittest.TestCase):
             "REVISION_CHECKLIST",
             "- Item",
         ])
-        memo, checklist = _split_review_output(content)
+        memo, checklist = split_review_output(content)
         self.assertIn("REFEREE_MEMO", memo)
         self.assertIn("REVISION_CHECKLIST", checklist)
 
@@ -22,13 +22,13 @@ class ReviewSplitTest(unittest.TestCase):
             "REVISION CHECKLIST",
             "- Item",
         ])
-        memo, checklist = _split_review_output(content)
+        memo, checklist = split_review_output(content)
         self.assertIn("REFEREE_MEMO", memo)
         self.assertTrue(checklist.startswith("REVISION_CHECKLIST"))
 
     def test_split_without_marker(self) -> None:
         content = "REFEREE_MEMO\nOnly memo text"
-        memo, checklist = _split_review_output(content)
+        memo, checklist = split_review_output(content)
         self.assertEqual(memo, content)
         self.assertIn("REVISION_CHECKLIST", checklist)
 

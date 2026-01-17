@@ -1,0 +1,9 @@
+REFEREE_MEMO
+Summary: Placeholder memo.
+
+REVISION_CHECKLIST
+- Major issues (3 items)
+- Section: S1 Issue: Placeholder Suggested fix: Placeholder.
+- Minor issues (3 items)
+- Section: S2 Issue: Placeholder Suggested fix: Placeholder.
+Quote: "Placeholder"

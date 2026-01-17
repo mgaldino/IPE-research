@@ -1,0 +1,9 @@
+[
+  {
+    "id": "sample-paper",
+    "review_type": "paper",
+    "level": null,
+    "sections": ["S1", "S2"],
+    "output_path": "harness/fixtures/sample-paper.txt"
+  }
+]
