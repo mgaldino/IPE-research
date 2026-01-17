@@ -11,6 +11,7 @@ Scope: IPE-only. Reuse existing council personas and design-only constraints.
   - Review type: `paper` or `project`
   - If `project`: level = `IC` | `Mestrado` | `Doutorado` | `FAPESP`
   - If `paper`: level is ignored (single standard)
+  - Language: `en` or `pt` (default `en`)
 
 ## Ingestion output (internal)
 - Structured sections with stable IDs:

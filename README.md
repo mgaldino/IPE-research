@@ -63,6 +63,8 @@ Open the UI:
 
 Validation notes are appended when output formatting fails (e.g., missing Quote lines for minor issues).
 
+Language: set Review language to `en` or `pt` in the Review form (default `en`).
+
 ## Council personas
 - Referee A: theory + positioning
 - Referee B: identification
