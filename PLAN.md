@@ -21,6 +21,9 @@ Active work queue and checkpoints.
 - Core refactor: mode-aware prompts, migration table, artifact writers.
 - Review mode v1: paper/project reviews, PDF ingestion, section indexing.
 - Review artifacts: grounded memo/checklist, LLM run, validation warnings in UI.
+- Review PDF upload in UI (multipart).
+- Review language toggle (EN/PT) and localized placeholders.
+- Review evaluation harness (offline validation runner + fixtures).
 
 ## Current focus
 - IDEA-006 is at Gate 4 with council memos; revisions pending.
@@ -33,10 +36,8 @@ Active work queue and checkpoints.
 - Add PI decision logging in DECISIONS.md and UI shortcuts.
 - Add UI indicator for assessment source (heuristic vs LLM) and last-run timestamp.
 - Tighten council scoring compliance (full rubric coverage and more conservative scoring).
-- Build a small evaluation harness (15–30 artifacts) with rubric-based regression checks.
-- Add PDF upload in Review UI (not just filename attach).
+- Build out the evaluation harness with 15–30 real artifacts and rubric-based regression checks.
 - Enforce exact 3 major + 3 minor counts in Review output.
-- Add language toggle for Review output (EN/PT).
 
 ## Backlog (project-level)
 - Dossier export improvements (batch export, zip per idea).
