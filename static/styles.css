@@ -58,7 +58,7 @@ body::after {
 }
 
 .app {
-  max-width: 1280px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 36px 24px 80px;
 }
@@ -156,8 +156,8 @@ p {
 
 .app-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
@@ -458,7 +458,7 @@ button:hover {
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1240px) {
   .app-grid {
     grid-template-columns: 1fr;
   }
