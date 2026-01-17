@@ -1,3 +1,418 @@
 # DATA_CATALOG
 
-Candidate datasets and access notes (no scraping/extraction).
+Candidate datasets and access notes (no scraping/extraction). Design only.
+
+## Entry standard (use for new additions)
+- Dataset name and owner/source
+- Lane alignment (from AGENTS.md)
+- Unit/time coverage
+- Access tier (see below)
+- Key variables or fields
+- Merge keys and likely pain points
+- Design fit (DiD/SCM/Shift-Share/Ideal points)
+- Known limitations and risks
+
+## Access tiers (consistent labels)
+- Open: public download or documentation without login
+- Registration: free account required
+- Academic license: university access or terms required
+- Commercial: paid subscription or vendor license
+- Restricted: not generally accessible or requires approval/FOIA
+
+## Catalog
+
+### Cross-cutting macro and finance
+- IMF World Economic Outlook (WEO)
+  - Lane: cross-cutting baseline
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: GDP, growth, inflation, debt, current account
+  - Merge keys: ISO3, year
+  - Design fit: DiD/SCM/Shift-Share controls
+  - Risks: revisions across vintages
+- World Bank World Development Indicators (WDI)
+  - Lane: cross-cutting baseline
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: macro, trade, population, governance proxies
+  - Merge keys: ISO3, year
+  - Design fit: DiD/SCM/Shift-Share controls
+  - Risks: missingness for low-income states
+- IMF International Financial Statistics (IFS)
+  - Lane: Financial Statecraft and Monetary Power
+  - Unit/time: country-month/quarter
+  - Access: Academic license
+  - Key fields: exchange rates, reserves, monetary aggregates
+  - Merge keys: ISO3, period
+  - Design fit: DiD/SCM controls
+  - Risks: subscription and gaps by country
+- IMF CPIS (portfolio investment)
+  - Lane: Financial Statecraft and Monetary Power
+  - Unit/time: reporter-recipient-year
+  - Access: Open
+  - Key fields: cross-border securities holdings
+  - Merge keys: reporter ISO3, partner ISO3, year
+  - Design fit: Shift-Share exposure or SCM
+  - Risks: coverage bias toward reporting economies
+- IMF COFER (reserve composition)
+  - Lane: Financial Statecraft and Monetary Power
+  - Unit/time: country-quarter (partial) + global aggregates
+  - Access: Registration
+  - Key fields: reserve currency shares
+  - Merge keys: ISO3, period
+  - Design fit: DiD/SCM
+  - Risks: confidentiality suppresses some country detail
+- BIS Locational/Consolidated Banking Statistics (LBS/CBS)
+  - Lane: Financial Statecraft and Monetary Power
+  - Unit/time: reporter-recipient-quarter
+  - Access: Registration
+  - Key fields: cross-border bank claims and exposures
+  - Merge keys: reporter ISO3, partner ISO3, period
+  - Design fit: Shift-Share exposure, SCM
+  - Risks: incomplete coverage of non-reporters
+- SWIFT traffic or messaging data
+  - Lane: Financial Statecraft and Monetary Power
+  - Unit/time: corridor-month (varies)
+  - Access: Commercial/Restricted
+  - Key fields: payment volumes, corridors, message types
+  - Merge keys: corridor, period
+  - Design fit: DiD/SCM (payments shocks)
+  - Risks: access barriers and black-box measurement
+
+### Sanctions, enforcement, evasion
+- OFAC SDN list (US Treasury)
+  - Lane: Sanctions, Enforcement, and Evasion Ecosystems
+  - Unit/time: entity-date
+  - Access: Open
+  - Key fields: designation date, entity type, program tags
+  - Merge keys: entity name, identifiers, date
+  - Design fit: DiD (designation shocks), SCM
+  - Risks: name matching and entity resolution
+- EU Sanctions Map (EU)
+  - Lane: Sanctions, Enforcement, and Evasion Ecosystems
+  - Unit/time: entity-date
+  - Access: Open
+  - Key fields: designation date, regime, measures
+  - Merge keys: entity name, identifiers, date
+  - Design fit: DiD
+  - Risks: inconsistent identifiers across lists
+- UN consolidated sanctions list
+  - Lane: Sanctions, Enforcement, and Evasion Ecosystems
+  - Unit/time: entity-date
+  - Access: Open
+  - Key fields: UN listings, regime, listing date
+  - Merge keys: entity name, identifiers, date
+  - Design fit: DiD
+  - Risks: sparse for some programs
+- TIES (Threat and Imposition of Economic Sanctions)
+  - Lane: Sanctions, Enforcement, and Evasion Ecosystems
+  - Unit/time: sanction episode-year
+  - Access: Open
+  - Key fields: sender/target, objectives, outcomes
+  - Merge keys: country dyad, episode id, year
+  - Design fit: DiD/SCM
+  - Risks: coding subjectivity, limited recent coverage
+- Global Sanctions Data Base (GSDB)
+  - Lane: Sanctions, Enforcement, and Evasion Ecosystems
+  - Unit/time: episode-year
+  - Access: Open
+  - Key fields: sanction start/end, type, sender/target
+  - Merge keys: country dyad, year
+  - Design fit: DiD
+  - Risks: resolution too coarse for micro designs
+
+### Trade regimes, industrial policy, domestic coalitions
+- WTO I-TIP (trade policy measures)
+  - Lane: Trade Regimes, Industrial Policy, and Domestic Coalition Formation
+  - Unit/time: measure-event
+  - Access: Registration
+  - Key fields: measure type, date, product scope
+  - Merge keys: country, date, HS/product
+  - Design fit: DiD/Shift-Share
+  - Risks: heterogeneous reporting across members
+- Global Trade Alert (GTA)
+  - Lane: Trade Regimes, Industrial Policy, and Domestic Coalition Formation
+  - Unit/time: measure-event
+  - Access: Academic license
+  - Key fields: protectionist/liberalizing actions
+  - Merge keys: country, date, sector
+  - Design fit: DiD
+  - Risks: coverage differences by sector
+- DESTA (Design of Trade Agreements)
+  - Lane: Trade Regimes, Industrial Policy, and Domestic Coalition Formation
+  - Unit/time: agreement-year
+  - Access: Open
+  - Key fields: depth, provisions, partners
+  - Merge keys: agreement id, country, year
+  - Design fit: SCM (policy shifts), DiD
+  - Risks: agreement timing vs implementation lags
+- EU State Aid Scoreboard
+  - Lane: Trade Regimes, Industrial Policy, and Domestic Coalition Formation
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: state aid volumes by category
+  - Merge keys: country, year
+  - Design fit: DiD
+  - Risks: EU-only scope
+- USITC DataWeb (tariffs and imports)
+  - Lane: Trade Regimes, Industrial Policy, and Domestic Coalition Formation
+  - Unit/time: HS-year (often monthly)
+  - Access: Registration
+  - Key fields: tariffs, imports, duty rates
+  - Merge keys: HS code, period
+  - Design fit: DiD/Shift-Share
+  - Risks: harmonized code changes across years
+
+### Global production networks and chokepoints
+- UN Comtrade (bilateral trade)
+  - Lane: Global Production Networks, Chokepoints, and Strategic Interdependence
+  - Unit/time: reporter-partner-product-year
+  - Access: Registration
+  - Key fields: trade value, quantity, HS codes
+  - Merge keys: ISO3, partner ISO3, HS, year
+  - Design fit: Shift-Share exposure, DiD
+  - Risks: reporting inconsistencies and mirror gaps
+- CEPII BACI (harmonized trade)
+  - Lane: Global Production Networks, Chokepoints, and Strategic Interdependence
+  - Unit/time: dyad-product-year
+  - Access: Registration
+  - Key fields: harmonized trade flows
+  - Merge keys: ISO3, partner ISO3, HS, year
+  - Design fit: Shift-Share, SCM
+  - Risks: transformations may hide reporting errors
+- OECD TiVA
+  - Lane: Global Production Networks, Chokepoints, and Strategic Interdependence
+  - Unit/time: country-industry-year
+  - Access: Open
+  - Key fields: value-added trade, input dependencies
+  - Merge keys: country, industry, year
+  - Design fit: Shift-Share exposure
+  - Risks: limited sector granularity
+- WIOD (World Input-Output Database)
+  - Lane: Global Production Networks, Chokepoints, and Strategic Interdependence
+  - Unit/time: country-industry-year
+  - Access: Registration
+  - Key fields: input-output tables, value added
+  - Merge keys: country, industry, year
+  - Design fit: Shift-Share, SCM
+  - Risks: infrequent updates
+- EORA MRIO
+  - Lane: Global Production Networks, Chokepoints, and Strategic Interdependence
+  - Unit/time: country-industry-year
+  - Access: Academic license
+  - Key fields: multi-region IO tables
+  - Merge keys: country, industry, year
+  - Design fit: Shift-Share
+  - Risks: complex concordances
+- S&P Panjiva / ImportGenius
+  - Lane: Global Production Networks, Chokepoints, and Strategic Interdependence
+  - Unit/time: shipment-level
+  - Access: Commercial
+  - Key fields: shipper/consignee, product, date, port
+  - Merge keys: firm identifiers, HS codes
+  - Design fit: DiD (shock to inputs), SCM
+  - Risks: access cost and sampling bias
+- Orbis (firm registry)
+  - Lane: Global Production Networks, Chokepoints, and Strategic Interdependence
+  - Unit/time: firm-year
+  - Access: Commercial
+  - Key fields: ownership, sector, financials
+  - Merge keys: firm IDs, LEI where available
+  - Design fit: DiD, Shift-Share
+  - Risks: uneven coverage across countries
+
+### Technology controls and innovation geopolitics
+- US BIS Entity List and rule changes
+  - Lane: Technology Controls, Dual-Use Goods, and Innovation Geopolitics
+  - Unit/time: entity-date
+  - Access: Open
+  - Key fields: listing date, reason, rule citation
+  - Merge keys: entity name, identifiers, date
+  - Design fit: DiD
+  - Risks: entity resolution is labor intensive
+- EU Dual-Use Regulation lists
+  - Lane: Technology Controls, Dual-Use Goods, and Innovation Geopolitics
+  - Unit/time: control list version
+  - Access: Open
+  - Key fields: controlled items and revisions
+  - Merge keys: control list codes, dates
+  - Design fit: DiD/Shift-Share (product exposure)
+  - Risks: mapping to firm-level product data
+- PatentsView (USPTO)
+  - Lane: Technology Controls, Dual-Use Goods, and Innovation Geopolitics
+  - Unit/time: patent-year
+  - Access: Open
+  - Key fields: assignee, CPC classes, citations
+  - Merge keys: assignee, patent id, year
+  - Design fit: DiD (innovation outcomes)
+  - Risks: US-only scope
+- PATSTAT (EPO)
+  - Lane: Technology Controls, Dual-Use Goods, and Innovation Geopolitics
+  - Unit/time: patent-year
+  - Access: Commercial
+  - Key fields: global patent families, citations
+  - Merge keys: assignee, patent family id, year
+  - Design fit: DiD/SCM
+  - Risks: licensing and heavy preprocessing
+
+### Debt, IMF conditionality, crisis politics
+- IMF MONA (Monitoring of Fund Arrangements)
+  - Lane: Debt, IMF Conditionality, and Crisis Politics
+  - Unit/time: program-review
+  - Access: Open
+  - Key fields: conditionality, compliance, program type
+  - Merge keys: country, program id, date
+  - Design fit: DiD/SCM
+  - Risks: limited granularity on political context
+- IMF program dataset (historical arrangements)
+  - Lane: Debt, IMF Conditionality, and Crisis Politics
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: program start/end, type
+  - Merge keys: country, year
+  - Design fit: SCM, DiD
+  - Risks: selection into programs is endogenous
+- World Bank International Debt Statistics (IDS)
+  - Lane: Debt, IMF Conditionality, and Crisis Politics
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: debt stocks, service, creditors
+  - Merge keys: country, year
+  - Design fit: DiD controls
+  - Risks: reporting lags
+- Sovereign debt restructurings (Trebesch/Cruces)
+  - Lane: Debt, IMF Conditionality, and Crisis Politics
+  - Unit/time: episode-year
+  - Access: Open
+  - Key fields: restructuring events and terms
+  - Merge keys: country, year, episode id
+  - Design fit: DiD/SCM
+  - Risks: heterogeneity in event definitions
+
+### Energy, critical minerals, transition politics
+- US EIA energy data
+  - Lane: Energy, Critical Minerals, and the Political Economy of the Transition
+  - Unit/time: country or region-month/year
+  - Access: Open
+  - Key fields: energy production, prices, trade
+  - Merge keys: region, period
+  - Design fit: DiD/Shift-Share
+  - Risks: US-centric for some series
+- IEA energy balances
+  - Lane: Energy, Critical Minerals, and the Political Economy of the Transition
+  - Unit/time: country-year
+  - Access: Commercial
+  - Key fields: production, consumption, capacity
+  - Merge keys: country, year
+  - Design fit: DiD/SCM
+  - Risks: license restrictions
+- USGS Mineral Commodity Summaries
+  - Lane: Energy, Critical Minerals, and the Political Economy of the Transition
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: production, reserves, prices
+  - Merge keys: country, year
+  - Design fit: Shift-Share exposure
+  - Risks: reporting uncertainty for some minerals
+- Global Power Plant Database (WRI)
+  - Lane: Energy, Critical Minerals, and the Political Economy of the Transition
+  - Unit/time: plant-level
+  - Access: Open
+  - Key fields: capacity, fuel type, location
+  - Merge keys: plant id, lat/long
+  - Design fit: DiD (policy shocks), SCM
+  - Risks: incomplete coverage in some regions
+
+### Institutions under rivalry
+- WTO dispute settlement data
+  - Lane: Institutions Under Rivalry: Rules, Dispute Settlement, and Regime Fragmentation
+  - Unit/time: dispute-event
+  - Access: Open
+  - Key fields: complainant, respondent, subject, dates
+  - Merge keys: dispute id, date
+  - Design fit: DiD/SCM
+  - Risks: variation in case complexity
+- WorldTradeLaw.net (dispute texts)
+  - Lane: Institutions Under Rivalry: Rules, Dispute Settlement, and Regime Fragmentation
+  - Unit/time: dispute-document
+  - Access: Commercial
+  - Key fields: full dispute documents and rulings
+  - Merge keys: dispute id, document id
+  - Design fit: measurement/latent traits
+  - Risks: access cost and text processing load
+- COW IGO membership
+  - Lane: Institutions Under Rivalry: Rules, Dispute Settlement, and Regime Fragmentation
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: IGO memberships
+  - Merge keys: country, year
+  - Design fit: DiD controls, ideal points (agenda control)
+  - Risks: coarse measure of institutional engagement
+
+### Global inequality, tax, illicit flows
+- OECD Corporate Tax Statistics
+  - Lane: Global Inequality, Tax, Illicit Flows, and Regulatory Arbitrage
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: statutory rates, effective rates
+  - Merge keys: country, year
+  - Design fit: DiD
+  - Risks: limited coverage outside OECD partners
+- World Inequality Database (WID)
+  - Lane: Global Inequality, Tax, Illicit Flows, and Regulatory Arbitrage
+  - Unit/time: country-year
+  - Access: Registration
+  - Key fields: income/wealth shares
+  - Merge keys: country, year
+  - Design fit: DiD/SCM
+  - Risks: imputation and comparability across time
+- Tax Justice Network indices (CTHI/FI)
+  - Lane: Global Inequality, Tax, Illicit Flows, and Regulatory Arbitrage
+  - Unit/time: country-year (index releases)
+  - Access: Open
+  - Key fields: secrecy and haven scores
+  - Merge keys: country, release year
+  - Design fit: DiD (policy changes)
+  - Risks: index methodology changes
+- BIS LBS (for capital flight proxies)
+  - Lane: Global Inequality, Tax, Illicit Flows, and Regulatory Arbitrage
+  - Unit/time: reporter-recipient-quarter
+  - Access: Registration
+  - Key fields: cross-border deposits/claims
+  - Merge keys: reporter, partner, period
+  - Design fit: Shift-Share
+  - Risks: interpretation as illicit flows is indirect
+
+### Measurement of alignment, influence, dependence (ideal points)
+- UN General Assembly roll-call votes (Voeten/UNVotes)
+  - Lane: Measurement of Alignment, Influence, and Dependence
+  - Unit/time: country-vote-year
+  - Access: Open
+  - Key fields: vote, resolution, issue codes
+  - Merge keys: country, vote id, year
+  - Design fit: Ideal points
+  - Risks: agenda control and abstention handling
+- UNGA ideal point estimates (Bailey, Strezhnev, Voeten)
+  - Lane: Measurement of Alignment, Influence, and Dependence
+  - Unit/time: country-year
+  - Access: Open
+  - Key fields: latent positions and uncertainty
+  - Merge keys: country, year
+  - Design fit: Descriptive baseline or validation
+  - Risks: construct drift across UN agenda changes
+- WTO dispute participation (complainant/respondent/third party)
+  - Lane: Measurement of Alignment, Influence, and Dependence
+  - Unit/time: country-dispute
+  - Access: Open
+  - Key fields: participation roles, subject areas
+  - Merge keys: country, dispute id
+  - Design fit: Ideal points (behavioral alignment)
+  - Risks: strategic selection into disputes
+- Sanctions coalition participation lists (compiled)
+  - Lane: Measurement of Alignment, Influence, and Dependence
+  - Unit/time: country-episode
+  - Access: Restricted
+  - Key fields: join/exit dates, coalition membership
+  - Merge keys: country, episode id
+  - Design fit: Ideal points
+  - Risks: list provenance and definition ambiguity
