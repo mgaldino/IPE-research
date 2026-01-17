@@ -41,3 +41,5 @@ Active work queue and checkpoints.
 ## Backlog (project-level)
 - Dossier export improvements (batch export, zip per idea).
 - Additional tests for resubmission and assessment endpoints.
+- Align Review verdict with score rubric in prompt and validation.
+- Enforce exact 3 major + 3 minor counts in Review validation (pending decision).
