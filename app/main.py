@@ -9,7 +9,7 @@ from typing import List, Optional
 import re
 from contextlib import asynccontextmanager
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -491,6 +491,24 @@ async def attach_pdf_to_review(review_id: int, payload: ReviewAttachPdfInput) ->
     review_dir = BASE_DIR / "reviews" / str(review_id)
     write_review_artifacts(review_dir, stored_artifacts)
     return {"review_id": review_id, "sections": len(sections)}
+
+
+@app.post("/api/reviews/{review_id}/upload-pdf")
+async def upload_pdf_to_review(review_id: int, file: UploadFile) -> dict:
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Missing filename")
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    pdf_dir = BASE_DIR / "reviews" / "pdfs" / str(review_id)
+    pdf_dir.mkdir(parents=True, exist_ok=True)
+    target_path = (pdf_dir / file.filename).resolve()
+    if pdf_dir.resolve() not in target_path.parents:
+        raise HTTPException(status_code=400, detail="Invalid PDF path")
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Empty file")
+    target_path.write_bytes(content)
+    return {"filename": file.filename}
 
 
 @app.post("/api/reviews/{review_id}/run")

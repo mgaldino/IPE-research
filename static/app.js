@@ -29,6 +29,20 @@ async function fetchJSON(url, options = {}) {
   return response.json();
 }
 
+async function uploadFile(url, file) {
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch(url, {
+    method: "POST",
+    body,
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(detail || "Upload failed");
+  }
+  return response.json();
+}
+
 function setSessionStatus(text, isUnlocked = false) {
   const status = document.getElementById("session-status");
   status.textContent = text;
@@ -1020,6 +1034,7 @@ function wireForms() {
     typeSelect.addEventListener("change", updateReviewLevelVisibility);
     const attachButton = document.getElementById("review-attach");
     const runButton = document.getElementById("review-run");
+    const uploadButton = document.getElementById("review-upload");
 
     reviewForm.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -1073,6 +1088,33 @@ function wireForms() {
           });
           message.textContent = "PDF attached and sections indexed.";
           await loadReviewDetail(state.selectedReviewId);
+        } catch (error) {
+          message.textContent = error.message;
+        }
+      });
+    }
+
+    if (uploadButton) {
+      uploadButton.addEventListener("click", async () => {
+        const message = document.getElementById("review-message");
+        message.textContent = "";
+        if (!state.selectedReviewId) {
+          message.textContent = "Select a review first.";
+          return;
+        }
+        const fileInput = document.getElementById("review-pdf-upload");
+        const file = fileInput.files[0];
+        if (!file) {
+          message.textContent = "Choose a PDF to upload.";
+          return;
+        }
+        try {
+          const result = await uploadFile(
+            `/api/reviews/${state.selectedReviewId}/upload-pdf`,
+            file,
+          );
+          document.getElementById("review-pdf").value = result.filename;
+          message.textContent = "PDF uploaded. Now attach to index sections.";
         } catch (error) {
           message.textContent = error.message;
         }
