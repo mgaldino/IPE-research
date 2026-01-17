@@ -65,7 +65,7 @@ class ReviewIngestTest(unittest.TestCase):
 
     def test_project_level_expectations(self) -> None:
         review_id = self._create_review(
-            {"review_type": "project", "level": "Mestrado", "title": "Project Y"}
+            {"review_type": "project", "level": "Mestrado", "title": "Project Y", "language": "pt"}
         )
         pdf_dir = BASE_DIR / "reviews" / "pdfs" / str(review_id)
         pdf_dir.mkdir(parents=True, exist_ok=True)
@@ -81,8 +81,8 @@ class ReviewIngestTest(unittest.TestCase):
         self.assertEqual(detail.status_code, 200)
         artifacts = detail.json()["artifacts"]
         memo = next(a["content"] for a in artifacts if a["kind"] == "REFEREE_MEMO")
-        self.assertIn("Level: Mestrado", memo)
-        self.assertIn("Expectations: Coherent theory and feasible design", memo)
+        self.assertIn("Nivel: Mestrado", memo)
+        self.assertIn("Expectativas: Teoria coerente e desenho viavel", memo)
 
     def _create_review(self, payload: dict) -> int:
         response = self.client.post("/api/reviews", json=payload)

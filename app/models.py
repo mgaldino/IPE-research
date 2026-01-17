@@ -146,6 +146,7 @@ class Review(SQLModel, table=True):
     title: Optional[str] = None
     domain: Optional[str] = None
     method_family: Optional[str] = None
+    language: Optional[str] = Field(default="en")
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
     notes: Optional[str] = None

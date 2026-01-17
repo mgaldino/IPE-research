@@ -83,6 +83,16 @@ class ReviewEndpointsTest(unittest.TestCase):
         )
         self.assertEqual(run.status_code, 400)
 
+    def test_review_language_field(self) -> None:
+        response = self.client.post(
+            "/api/reviews",
+            json={"review_type": "paper", "title": "Paper Lang", "language": "pt"},
+        )
+        review_id = response.json()["review_id"]
+        detail = self.client.get(f"/api/reviews/{review_id}")
+        self.assertEqual(detail.status_code, 200)
+        self.assertEqual(detail.json()["review"]["language"], "pt")
+
 
 if __name__ == "__main__":
     unittest.main()

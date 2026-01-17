@@ -11,6 +11,7 @@ class ReviewPromptTest(unittest.TestCase):
             title="Test Paper",
             domain="IPE",
             method_family="DiD",
+            language="pt",
             sections=[
                 {
                     "section_id": "S1",
@@ -28,6 +29,7 @@ class ReviewPromptTest(unittest.TestCase):
         self.assertIn("REVISION_CHECKLIST", prompt)
         self.assertIn('Use section IDs exactly as provided (format S#).', prompt)
         self.assertIn('For minor issues, put the quote on its own line labeled "Quote:".', prompt)
+        self.assertIn("Output in Portuguese.", prompt)
 
 
 if __name__ == "__main__":

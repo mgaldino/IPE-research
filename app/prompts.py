@@ -295,6 +295,7 @@ def build_review_prompt(
     title: str | None,
     domain: str | None,
     method_family: str | None,
+    language: str,
     sections: list[dict],
 ) -> str:
     template = REVIEW_PAPER_TEMPLATE if review_type == "paper" else REVIEW_PROJECT_TEMPLATE
@@ -304,14 +305,17 @@ def build_review_prompt(
         f"Title: {title or 'Untitled'}",
         f"Domain: {domain or 'n/a'}",
         f"Method family: {method_family or 'n/a'}",
+        f"Language: {language}",
     ]
     section_lines = ["Sections:"]
     for section in sections:
         section_lines.append(
             f"- {section['section_id']} {section['title']} (p{section['page_start']}-{section['page_end']}): {section['excerpt']}"
         )
+    language_line = "Output in Portuguese." if language == "pt" else "Output in English."
     return "\n\n".join([
         REVIEW_CONTEXT,
+        language_line,
         "\n".join(header_lines),
         "\n".join(section_lines),
         template,

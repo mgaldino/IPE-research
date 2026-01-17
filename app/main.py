@@ -97,6 +97,7 @@ class ReviewInput(BaseModel):
     title: Optional[str] = None
     domain: Optional[str] = None
     method_family: Optional[str] = None
+    language: Optional[str] = "en"
 
 
 class ReviewAttachPdfInput(BaseModel):
@@ -360,6 +361,7 @@ async def list_reviews() -> List[dict]:
             "title": review.title,
             "domain": review.domain,
             "method_family": review.method_family,
+            "language": review.language,
             "created_at": review.created_at.isoformat(),
             "updated_at": review.updated_at.isoformat(),
         }
@@ -371,6 +373,8 @@ async def list_reviews() -> List[dict]:
 async def create_review(payload: ReviewInput) -> dict:
     if payload.review_type == ReviewType.project and payload.level is None:
         raise HTTPException(status_code=400, detail="Project reviews require a level")
+    if payload.language not in {"en", "pt"}:
+        raise HTTPException(status_code=400, detail="Language must be en or pt")
     level = payload.level if payload.review_type == ReviewType.project else None
     with Session(engine) as session:
         review = Review(
@@ -379,6 +383,7 @@ async def create_review(payload: ReviewInput) -> dict:
             title=payload.title,
             domain=payload.domain,
             method_family=payload.method_family,
+            language=payload.language or "en",
         )
         session.add(review)
         session.commit()
@@ -410,6 +415,7 @@ async def get_review(review_id: int) -> dict:
             "title": review.title,
             "domain": review.domain,
             "method_family": review.method_family,
+            "language": review.language,
             "created_at": review.created_at.isoformat(),
             "updated_at": review.updated_at.isoformat(),
         },
@@ -452,6 +458,7 @@ async def attach_pdf_to_review(review_id: int, payload: ReviewAttachPdfInput) ->
             sections,
             review_type=review.review_type.value,
             level=review.level.value if review.level else None,
+            language=review.language or "en",
         )
         session.exec(
             ReviewSection.__table__.delete().where(ReviewSection.review_id == review_id)
@@ -547,6 +554,7 @@ async def run_review(review_id: int, payload: ReviewRunInput) -> dict:
             title=review.title,
             domain=review.domain,
             method_family=review.method_family,
+            language=review.language or "en",
             sections=[
                 {
                     "section_id": section.section_id,

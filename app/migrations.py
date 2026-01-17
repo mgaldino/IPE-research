@@ -90,6 +90,13 @@ def _migrations() -> Iterable[Migration]:
                 session, "councilmemo", "round_id", "INTEGER"
             ),
         ),
+        Migration(
+            version=7,
+            name="add_review_language",
+            apply=lambda session: _add_column(
+                session, "review", "language", "TEXT DEFAULT 'en'"
+            ),
+        ),
     ]
 
 

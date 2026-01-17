@@ -238,6 +238,7 @@ async function loadReviewDetail(reviewId) {
     <div>Level: ${review.level || "n/a"}</div>
     <div>Domain: ${review.domain || "n/a"}</div>
     <div>Method: ${review.method_family || "n/a"}</div>
+    <div>Language: ${review.language || "en"}</div>
     <h4>Sections</h4>
     <pre>${sections || "No sections yet."}</pre>
     <h4>Artifacts</h4>
@@ -1045,12 +1046,14 @@ function wireForms() {
       const title = document.getElementById("review-title").value;
       const domain = document.getElementById("review-domain").value;
       const method = document.getElementById("review-method").value;
+      const language = document.getElementById("review-language").value;
 
       const payload = {
         review_type: reviewType,
         title: title || null,
         domain: domain || null,
         method_family: method || null,
+        language: language || "en",
       };
       if (reviewType === "project") {
         payload.level = level;

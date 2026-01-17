@@ -101,52 +101,54 @@ def build_grounded_artifacts(
     *,
     review_type: str,
     level: str | None,
+    language: str,
 ) -> dict[str, str]:
+    labels = _labels_for(language)
     if not sections:
         memo = "\n".join([
-            "Referee Memo",
+            labels["memo_title"],
             "",
-            f"- Review type: {review_type}",
-            f"- Level: {level or 'n/a'}",
-            "- Summary: No sections available for review.",
-            "- Contribution: n/a",
-            "- Design/ID: n/a",
-            "- Measurement: n/a",
-            "- Feasibility: n/a",
-            "- Verdict: revise",
+            f"- {labels['review_type']}: {review_type}",
+            f"- {labels['level']}: {level or 'n/a'}",
+            f"- {labels['summary']}: {labels['no_sections']}",
+            f"- {labels['contribution']}: n/a",
+            f"- {labels['design']}: n/a",
+            f"- {labels['measurement']}: n/a",
+            f"- {labels['feasibility']}: n/a",
+            f"- {labels['verdict']}: revise",
         ])
         checklist = "\n".join([
-            "Revision Checklist",
+            labels["checklist_title"],
             "",
-            "- Section: n/a",
-            "  Evidence: n/a",
-            "  Issue: Missing document content.",
-            "  Minimal fix: Attach a PDF and re-run review.",
+            f"- {labels['section']}: n/a",
+            f"  {labels['evidence']}: n/a",
+            f"  {labels['issue']}: {labels['missing_doc']}",
+            f"  {labels['fix']}: {labels['attach_pdf']}",
         ])
         return {"REFEREE_MEMO": memo, "REVISION_CHECKLIST": checklist}
 
     top_sections = sections[:3]
-    expectations = _expectations_for(review_type, level)
+    expectations = _expectations_for(review_type, level, language)
     summary_lines = [
-        "Referee Memo",
+        labels["memo_title"],
         "",
-        f"- Review type: {review_type}",
-        f"- Level: {level or 'n/a'}",
-        "- Summary: Review generated from indexed sections.",
-        "- Contribution: n/a (needs manual assessment).",
-        "- Design/ID: n/a (needs manual assessment).",
-        "- Measurement: n/a (needs manual assessment).",
-        "- Feasibility: n/a (needs manual assessment).",
-        f"- Expectations: {expectations}",
-        "- Verdict: revise",
+        f"- {labels['review_type']}: {review_type}",
+        f"- {labels['level']}: {level or 'n/a'}",
+        f"- {labels['summary']}: {labels['generated']}",
+        f"- {labels['contribution']}: n/a (needs manual assessment).",
+        f"- {labels['design']}: n/a (needs manual assessment).",
+        f"- {labels['measurement']}: n/a (needs manual assessment).",
+        f"- {labels['feasibility']}: n/a (needs manual assessment).",
+        f"- {labels['expectations']}: {expectations}",
+        f"- {labels['verdict']}: revise",
     ]
-    checklist_lines = ["Revision Checklist", ""]
+    checklist_lines = [labels["checklist_title"], ""]
     for section in top_sections:
         checklist_lines.extend([
-            f"- Section: {section.section_id} {section.title}",
-            f"  Evidence: \"{section.excerpt}\"",
-            "  Issue: Review requires grounded critique; add specific notes.",
-            "  Minimal fix: Provide focused critique for this section.",
+            f"- {labels['section']}: {section.section_id} {section.title}",
+            f"  {labels['evidence']}: \"{section.excerpt}\"",
+            f"  {labels['issue']}: {labels['grounded_issue']}",
+            f"  {labels['fix']}: {labels['grounded_fix']}",
             "",
         ])
     return {
@@ -155,18 +157,84 @@ def build_grounded_artifacts(
     }
 
 
-def _expectations_for(review_type: str, level: str | None) -> str:
+def _expectations_for(review_type: str, level: str | None, language: str) -> str:
     if review_type == "paper":
-        return "Journal-standard contribution, clarity, and design credibility."
+        return (
+            "Journal-standard contribution, clarity, and design credibility."
+            if language != "pt"
+            else "Contribuicao de nivel de journal, clareza e credibilidade do desenho."
+        )
     if not level:
-        return "Project-standard contribution and feasibility."
-    level_map = {
+        return (
+            "Project-standard contribution and feasibility."
+            if language != "pt"
+            else "Contribuicao e viabilidade em nivel de projeto."
+        )
+    level_map_en = {
         "IC": "Scope discipline and feasibility at an undergraduate level.",
         "Mestrado": "Coherent theory and feasible design at a masters level.",
         "Doutorado": "Agenda-setting contribution with deep identification logic.",
         "FAPESP": "Feasibility, execution risk, and public value clarity.",
     }
-    return level_map.get(level, "Project-standard contribution and feasibility.")
+    level_map_pt = {
+        "IC": "Disciplina de escopo e viabilidade em nivel de IC.",
+        "Mestrado": "Teoria coerente e desenho viavel em nivel de mestrado.",
+        "Doutorado": "Contribuicao agenda-setting com identificacao profunda.",
+        "FAPESP": "Viabilidade, risco de execucao e clareza de valor publico.",
+    }
+    if language == "pt":
+        return level_map_pt.get(level, "Contribuicao e viabilidade em nivel de projeto.")
+    return level_map_en.get(level, "Project-standard contribution and feasibility.")
+
+
+def _labels_for(language: str) -> dict[str, str]:
+    if language == "pt":
+        return {
+            "memo_title": "Referee Memo",
+            "checklist_title": "Revision Checklist",
+            "review_type": "Tipo de revisao",
+            "level": "Nivel",
+            "summary": "Resumo",
+            "contribution": "Contribuicao",
+            "design": "Desenho/ID",
+            "measurement": "Medicao",
+            "feasibility": "Viabilidade",
+            "verdict": "Veredito",
+            "expectations": "Expectativas",
+            "section": "Secao",
+            "evidence": "Evidencia",
+            "issue": "Problema",
+            "fix": "Correcao minima",
+            "no_sections": "Sem secoes para revisar.",
+            "generated": "Revisao gerada a partir das secoes indexadas.",
+            "missing_doc": "Conteudo ausente.",
+            "attach_pdf": "Anexe um PDF e rode novamente.",
+            "grounded_issue": "A revisao exige critica ancorada; adicionar notas especificas.",
+            "grounded_fix": "Fornecer critica focada para esta secao.",
+        }
+    return {
+        "memo_title": "Referee Memo",
+        "checklist_title": "Revision Checklist",
+        "review_type": "Review type",
+        "level": "Level",
+        "summary": "Summary",
+        "contribution": "Contribution",
+        "design": "Design/ID",
+        "measurement": "Measurement",
+        "feasibility": "Feasibility",
+        "verdict": "Verdict",
+        "expectations": "Expectations",
+        "section": "Section",
+        "evidence": "Evidence",
+        "issue": "Issue",
+        "fix": "Minimal fix",
+        "no_sections": "No sections available for review.",
+        "generated": "Review generated from indexed sections.",
+        "missing_doc": "Missing document content.",
+        "attach_pdf": "Attach a PDF and re-run review.",
+        "grounded_issue": "Review requires grounded critique; add specific notes.",
+        "grounded_fix": "Provide focused critique for this section.",
+    }
 
 
 def _is_heading(line: str) -> bool:
