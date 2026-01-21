@@ -6,14 +6,14 @@ Goal: Ship a trusted Review mode within the existing app, without building domai
 Success is measured by concrete improvements in review quality and traceability, not by breadth.
 
 ## Month 1 — Review v1 in IPE (minimal scope)
-Milestone: Review mode workflow live, using current council personas and strict design-only constraints.
+Milestone: Review mode workflow live, using current council personas and no-execution constraints (method-agnostic review).
 
 Key deliverables:
 - Review workflow (UI + API) parallel to Ideation workflow.
 - Input: PDF + optional metadata (target journal tier, contribution type, method).
 - Support review types:
   - Paper: single standard, journal-style referee report.
-  - Project: IC / Mestrado / Doutorado / FAPESP expectations.
+- Project: IC / Mestrado / Doutorado / Research Grant expectations.
 - Output: “Referee Memo + Revision Checklist” artifact with a fixed template.
 - Gate logic for Review mode (basic pass/fail + scores).
 

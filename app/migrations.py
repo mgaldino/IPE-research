@@ -97,6 +97,24 @@ def _migrations() -> Iterable[Migration]:
                 session, "review", "language", "TEXT DEFAULT 'en'"
             ),
         ),
+        Migration(
+            version=8,
+            name="rename_review_level_fapesp",
+            apply=lambda session: session.exec(
+                text(
+                    "UPDATE review SET level = 'Research Grant' "
+                    "WHERE level = 'FAPESP'"
+                )
+            ),
+        ),
+        Migration(
+            version=9,
+            name="add_reviewartifact_persona_slot",
+            apply=lambda session: (
+                _add_column(session, "reviewartifact", "persona", "TEXT"),
+                _add_column(session, "reviewartifact", "slot", "INTEGER"),
+            ),
+        ),
     ]
 
 

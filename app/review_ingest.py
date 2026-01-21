@@ -104,12 +104,13 @@ def build_grounded_artifacts(
     language: str,
 ) -> dict[str, str]:
     labels = _labels_for(language)
+    level_label = level or "n/a"
     if not sections:
         memo = "\n".join([
             labels["memo_title"],
             "",
             f"- {labels['review_type']}: {review_type}",
-            f"- {labels['level']}: {level or 'n/a'}",
+            f"- {labels['level']}: {level_label}",
             f"- {labels['summary']}: {labels['no_sections']}",
             f"- {labels['contribution']}: n/a",
             f"- {labels['design']}: n/a",
@@ -133,7 +134,7 @@ def build_grounded_artifacts(
         labels["memo_title"],
         "",
         f"- {labels['review_type']}: {review_type}",
-        f"- {labels['level']}: {level or 'n/a'}",
+        f"- {labels['level']}: {level_label}",
         f"- {labels['summary']}: {labels['generated']}",
         f"- {labels['contribution']}: n/a (needs manual assessment).",
         f"- {labels['design']}: n/a (needs manual assessment).",
@@ -174,13 +175,13 @@ def _expectations_for(review_type: str, level: str | None, language: str) -> str
         "IC": "Scope discipline and feasibility at an undergraduate level.",
         "Mestrado": "Coherent theory and feasible design at a masters level.",
         "Doutorado": "Agenda-setting contribution with deep identification logic.",
-        "FAPESP": "Feasibility, execution risk, and public value clarity.",
+        "Research Grant": "Feasibility, execution risk, and public value clarity.",
     }
     level_map_pt = {
         "IC": "Disciplina de escopo e viabilidade em nivel de IC.",
         "Mestrado": "Teoria coerente e desenho viavel em nivel de mestrado.",
         "Doutorado": "Contribuicao agenda-setting com identificacao profunda.",
-        "FAPESP": "Viabilidade, risco de execucao e clareza de valor publico.",
+        "Research Grant": "Viabilidade, risco de execucao e clareza de valor publico.",
     }
     if language == "pt":
         return level_map_pt.get(level, "Contribuicao e viabilidade em nivel de projeto.")

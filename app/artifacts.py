@@ -57,7 +57,7 @@ def write_review_artifacts(
 ) -> None:
     target_dir.mkdir(parents=True, exist_ok=True)
     for artifact in artifacts:
-        filename = REVIEW_LAYOUT.get(artifact.kind)
+        filename = _review_artifact_filename(artifact)
         if filename:
             _write_markdown(target_dir / filename, artifact.content)
 
@@ -73,3 +73,27 @@ def _latest_parts(parts: Iterable[DossierPart]) -> list[DossierPart]:
 
 def _write_markdown(path: Path, content: str) -> None:
     path.write_text(content.strip() + "\n", encoding="utf-8")
+
+
+def _review_artifact_filename(artifact: ReviewArtifact) -> str | None:
+    base = REVIEW_LAYOUT.get(artifact.kind)
+    if not base:
+        return None
+    if not artifact.persona and not artifact.slot:
+        return base
+    stem, suffix = base.rsplit(".", 1)
+    persona = _slugify(artifact.persona or "reviewer")
+    slot = f"S{artifact.slot}" if artifact.slot else None
+    parts = [stem]
+    if slot:
+        parts.append(slot)
+    if persona:
+        parts.append(persona)
+    return "__".join(parts) + f".{suffix}"
+
+
+def _slugify(value: str) -> str:
+    slug = "".join(ch if ch.isalnum() else "_" for ch in value.strip().lower())
+    while "__" in slug:
+        slug = slug.replace("__", "_")
+    return slug.strip("_")

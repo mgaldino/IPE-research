@@ -21,7 +21,7 @@
 ---
 
 ## Review Mode (Paper/Project)
-- Two review tracks: paper vs project (IC/Mestrado/Doutorado/FAPESP).
+- Two review tracks: paper vs project (IC/Mestrado/Doutorado/Research Grant).
 - PDF ingestion -> section IDs + excerpts for grounding.
 - Outputs:
   - Referee Memo (350–500 words, APSR-style, score + verdict).

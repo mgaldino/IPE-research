@@ -1,8 +1,10 @@
+import os
+
 from sqlmodel import SQLModel, create_engine, Session
 
 from .migrations import apply_migrations
 
-DATABASE_URL = "sqlite:///./codex_council.db"
+DATABASE_URL = os.getenv("CODEX_COUNCIL_DB_URL", "sqlite:///./codex_council.db")
 
 engine = create_engine(
     DATABASE_URL,

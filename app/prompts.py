@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .review_personas import persona_guidance, persona_label
+
 BASE_CONTEXT = """
 You are an IPE research idea agent. Only propose design-level plans; do not run analyses, estimate models, scrape data, or claim results.
 Focus on International Political Economy. Use DiD, SCM, Shift-Share for causal ideas, or ideal point/latent trait models for descriptive ideas.
@@ -118,10 +120,7 @@ Do not claim new empirical results.
 """.strip()
 
 REVIEW_CONTEXT = """
-You are a senior APSR-level referee. Be rigorous, skeptical, and constructive.
-You must stay at design-only level; do not claim new empirical results.
-If the paper is theoretical only, focus on theory and contribution.
-If the paper is empirical, cover theory + design + evidence.
+Use the review format and rules below. Keep the memo rigorous, skeptical, and constructive.
 """.strip()
 
 REVIEW_PAPER_TEMPLATE = """
@@ -129,9 +128,7 @@ Write a referee report for a paper. Follow this exact format:
 
 REFEREE_MEMO (350-500 words)
 - Summary (2-3 sentences)
-- Contribution and novelty
-- Design/ID assessment (if empirical)
-- Evidence/measurement assessment (if empirical)
+- Persona-focused assessment (follow persona guidance above)
 - Verdict: Reject / Major Revise / Revise
 - Overall score: X/10
 
@@ -152,9 +149,7 @@ Write a referee report for a research project proposal. Follow this exact format
 
 REFEREE_MEMO (350-500 words)
 - Summary (2-3 sentences)
-- Contribution and novelty
-- Design/ID assessment (if empirical)
-- Evidence/measurement assessment (if empirical)
+- Persona-focused assessment (follow persona guidance above)
 - Verdict: Reject / Major Revise / Revise
 - Overall score: X/10
 
@@ -297,8 +292,16 @@ def build_review_prompt(
     method_family: str | None,
     language: str,
     sections: list[dict],
+    persona: str | None = None,
 ) -> str:
     template = REVIEW_PAPER_TEMPLATE if review_type == "paper" else REVIEW_PROJECT_TEMPLATE
+    persona_name = persona_label(persona) if persona else "General"
+    persona_line = (
+        "You are a senior APSR-level referee. Be rigorous, skeptical, and constructive. "
+        f"You are focused on: {persona_name}. "
+        "Stay within your assigned scope; comment outside it only if the issue is fatal to the paper’s core claims."
+    )
+    persona_notes = persona_guidance(persona) if persona else ""
     header_lines = [
         f"Review type: {review_type}",
         f"Level: {level or 'n/a'}",
@@ -313,10 +316,13 @@ def build_review_prompt(
             f"- {section['section_id']} {section['title']} (p{section['page_start']}-{section['page_end']}): {section['excerpt']}"
         )
     language_line = "Output in Portuguese." if language == "pt" else "Output in English."
-    return "\n\n".join([
-        REVIEW_CONTEXT,
+    prompt_blocks = [
+        persona_line,
+        persona_notes,
         language_line,
         "\n".join(header_lines),
         "\n".join(section_lines),
+        REVIEW_CONTEXT,
         template,
-    ])
+    ]
+    return "\n\n".join([block for block in prompt_blocks if block])

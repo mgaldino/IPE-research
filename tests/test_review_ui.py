@@ -9,11 +9,8 @@ class ReviewUiTest(unittest.TestCase):
         self.assertIn('id="review-list"', html)
         self.assertIn('id="review-warning"', html)
         self.assertIn('id="review-detail"', html)
-        self.assertIn('id="review-attach"', html)
-        self.assertIn('id="review-upload"', html)
+        self.assertIn('id="review-pdf-upload"', html)
         self.assertIn('id="review-language"', html)
-        self.assertIn('id="review-provider"', html)
-        self.assertIn('id="review-model"', html)
         self.assertIn('id="review-run"', html)
 
 

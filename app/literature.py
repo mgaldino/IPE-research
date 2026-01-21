@@ -1,6 +1,5 @@
 import re
 from urllib.parse import quote
-from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
@@ -10,39 +9,11 @@ from pypdf import PdfReader
 from sqlmodel import Session, select
 
 from .db import engine
-from .models import LiteratureAssessment, LiteratureQuery, LiteratureWork
+from .models import LiteratureQuery, LiteratureWork
 
 OPENALEX_URL = "https://api.openalex.org/works"
 CROSSREF_URL = "https://api.crossref.org/works"
 SEMANTIC_SCHOLAR_URL = "https://api.semanticscholar.org/graph/v1/paper/search"
-
-STOPWORDS = {
-    "the", "and", "of", "to", "in", "a", "for", "on", "with", "is", "that", "as", "by",
-    "an", "are", "from", "this", "be", "or", "at", "it", "we", "not", "can", "have",
-    "has", "will", "which", "their", "these", "its", "also", "our", "they", "was", "were",
-}
-
-METHOD_TERMS = {
-    "difference-in-differences": ["difference-in-differences", "difference in differences", "did"],
-    "synthetic control": ["synthetic control", "scm"],
-    "shift-share": ["shift-share", "shift share", "bartik"],
-    "ideal point": ["ideal point", "ideal points", "irt", "item response"],
-}
-
-DATASET_TERMS = [
-    "un comtrade",
-    "baci",
-    "imf",
-    "world bank",
-    "wto",
-    "ofac",
-    "swif",
-    "swift",
-    "oecd",
-    "bis",
-    "un voting",
-    "unga",
-]
 
 EXCLUDED_WORK_TYPES = {
     "book",
@@ -214,77 +185,6 @@ def extract_pdf_text(path: Path) -> str:
     return "\n".join(text).strip()
 
 
-def _top_terms(texts: list[str], limit: int = 15) -> list[tuple[str, int]]:
-    counter = Counter()
-    for text in texts:
-        for term in re.findall(r"[a-zA-Z]{3,}", text.lower()):
-            if term in STOPWORDS:
-                continue
-            counter[term] += 1
-    return counter.most_common(limit)
-
-
-def _count_methods(texts: list[str]) -> dict:
-    counts = {}
-    combined = "\n".join(texts).lower()
-    for label, variants in METHOD_TERMS.items():
-        counts[label] = sum(combined.count(variant) for variant in variants)
-    return counts
-
-
-def _detect_datasets(texts: list[str]) -> list[str]:
-    combined = "\n".join(texts).lower()
-    detected = []
-    for term in DATASET_TERMS:
-        if term in combined:
-            detected.append(term)
-    return detected
-
-
-def generate_assessment(texts: list[str], total_works: int) -> str:
-    top_terms = _top_terms(texts)
-    method_counts = _count_methods(texts)
-    datasets = _detect_datasets(texts)
-    missing_methods = [k for k, v in method_counts.items() if v == 0]
-
-    lines = [
-        "# Literature Assessment",
-        "",
-        f"Total works reviewed: {total_works}",
-        "",
-        "## Top recurring terms (heuristic)",
-    ]
-    for term, count in top_terms:
-        lines.append(f"- {term}: {count}")
-
-    lines.extend([
-        "",
-        "## Method mentions (heuristic)",
-    ])
-    for method, count in method_counts.items():
-        lines.append(f"- {method}: {count}")
-
-    lines.extend([
-        "",
-        "## Dataset mentions (heuristic)",
-    ])
-    if datasets:
-        for dataset in datasets:
-            lines.append(f"- {dataset}")
-    else:
-        lines.append("- None detected in abstracts/full text")
-
-    lines.extend([
-        "",
-        "## Potential gaps (heuristic, to verify)",
-    ])
-    if missing_methods:
-        lines.append("- Missing method coverage: " + ", ".join(missing_methods))
-    else:
-        lines.append("- No obvious method gaps detected from keyword scan")
-
-    return "\n".join(lines) + "\n"
-
 
 def ingest_local_pdfs(query_id: int, base_dir: Path) -> None:
     local_dir = base_dir / "literature" / "pdfs" / str(query_id)
@@ -338,43 +238,6 @@ def update_full_texts(query_id: int) -> None:
                 session.add(work)
         session.commit()
 
-
-def rebuild_assessment(query_id: int, base_dir: Path) -> str:
-    ingest_local_pdfs(query_id, base_dir)
-    update_full_texts(query_id)
-
-    with Session(engine) as session:
-        works = session.exec(select(LiteratureWork).where(LiteratureWork.query_id == query_id)).all()
-        texts = []
-        for work in works:
-            combined = " ".join(filter(None, [work.abstract, work.full_text]))
-            if combined:
-                texts.append(combined)
-        assessment = generate_assessment(texts, total_works=len(works))
-
-        assessment_dir = base_dir / "literature" / "assessments"
-        assessment_dir.mkdir(parents=True, exist_ok=True)
-        assessment_path = assessment_dir / f"assessment_{query_id}.md"
-        assessment_path.write_text(assessment, encoding="utf-8")
-
-        existing = session.exec(
-            select(LiteratureAssessment).where(LiteratureAssessment.query_id == query_id)
-        ).first()
-        if existing:
-            existing.content = assessment
-            session.add(existing)
-        else:
-            session.add(LiteratureAssessment(query_id=query_id, content=assessment))
-
-        query_row = session.get(LiteratureQuery, query_id)
-        if query_row:
-            query_row.status = "completed"
-            query_row.updated_at = datetime.now(timezone.utc)
-            query_row.notes = f"assessment_path={assessment_path}"
-            session.add(query_row)
-        session.commit()
-
-    return assessment
 
 
 def run_literature_query(
@@ -449,5 +312,3 @@ def run_literature_query(
                     work.updated_at = datetime.now(timezone.utc)
                     session.add(work)
         session.commit()
-
-    rebuild_assessment(query_id, base_dir)

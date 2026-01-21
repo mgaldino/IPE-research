@@ -41,7 +41,7 @@ class ProjectLevel(str, Enum):
     ic = "IC"
     mestrado = "Mestrado"
     doutorado = "Doutorado"
-    fapesp = "FAPESP"
+    research_grant = "Research Grant"
 
 
 class ReviewStatus(str, Enum):
@@ -156,6 +156,8 @@ class ReviewArtifact(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     review_id: int = Field(index=True)
     kind: ReviewArtifactKind
+    persona: Optional[str] = Field(default=None, index=True)
+    slot: Optional[int] = None
     content: str
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)

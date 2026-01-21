@@ -30,6 +30,7 @@ class ReviewPromptTest(unittest.TestCase):
         self.assertIn('Use section IDs exactly as provided (format S#).', prompt)
         self.assertIn('For minor issues, put the quote on its own line labeled "Quote:".', prompt)
         self.assertIn("Output in Portuguese.", prompt)
+        self.assertIn("Persona-focused assessment", prompt)
 
 
 if __name__ == "__main__":

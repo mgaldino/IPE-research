@@ -18,7 +18,7 @@ Repo context: see `README.md` for current MVP scope and features.
 
 ### 2.2 Modes (feature variants in the same app)
 1) **Ideation mode** (current behavior)
-2) **Review mode** (new): evaluate existing artifacts
+2) **Review mode** (new): evaluate existing artifacts across methods (quantitative, qualitative, mixed)
    - “Paper review” (referee-style critique)
    - “Project review” (IC/MSc/PhD proposals at different levels)
 

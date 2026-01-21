@@ -1,6 +1,6 @@
 # DESIGN_PLAYBOOK
 
-House standards for DiD/SCM/Shift-Share/Ideal points (design-only).
+House standards for DiD/SCM/Shift-Share/Ideal points (design-only) for idea generation and vetting. Review mode can reference these standards but is not restricted to these design families.
 
 ## General principles (all designs)
 - State the estimand or construct in one sentence that a referee could restate.

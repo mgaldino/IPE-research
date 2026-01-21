@@ -1,14 +1,20 @@
 # AGENTS.md — IPE Breakthrough Idea Swarm (No Execution)
 
 ## 0) Mission
-Build a local web app that orchestrates a swarm of AI agents to generate and vet **International Political Economy (IPE)** research ideas, and to produce APSR-level reviews of papers and research projects. The system’s outputs are design-only and do not execute analysis.
+Build a local web app that orchestrates a swarm of AI agents to generate and vet **International Political Economy (IPE)** research ideas, and to produce APSR-level reviews of papers and research projects (IC, Mestrado, Doutorado, Research Grant). The system’s outputs are design-only and do not execute analysis.
+
+Ideation is breakthrough-oriented:
 - **Theoretically ambitious** (agenda-setting, not incremental).
 - **Empirically serious** at the level of *design* (credible identification/measurement plans), but **not executed**.
 - Explicitly aligned with:
   - **Causal designs**: DiD, SCM, Shift-Share.
   - **Descriptive designs**: ideal point estimation from votes or comparable revealed-preference behavior.
 
-The system’s purpose is to maximize the probability that the PI selects ideas capable of becoming **breakthrough papers** suitable for top journals, under the assumption that incremental execution is increasingly commoditized.
+Review mode is method-agnostic:
+- Evaluate theory, design, and evidence as written (quantitative, qualitative, or mixed).
+- No execution or new analysis.
+
+The system’s purpose is to maximize the probability that the PI selects ideas capable of becoming **breakthrough papers** suitable for top journals, under the assumption that incremental execution is increasingly commoditized. Review mode’s purpose is to vet and improve papers/projects at the appropriate level, not to require breakthrough claims.
 
 **Non-goal:** automatic data collection, estimation, or paper execution. No “Stage D.”
 
@@ -26,7 +32,7 @@ For each candidate idea, the app must produce a structured “idea dossier” co
 6) **Council-style referee memos** with scores and required revisions.
 7) **Next-step checklist for the PI** (what to do to execute later, if chosen).
 
-For each review (paper or project), the app must produce:
+For each review (paper or project; IC/Mestrado/Doutorado/Research Grant levels), the app must produce:
 1) **Referee Memo** (APSR-level, 350–500 words) with summary, contribution assessment, design/evidence assessment (when empirical), verdict, and overall score.
 2) **Revision Checklist** with 3 major and 3 minor issues, grounded to section IDs; minors must include quotes labeled `Quote:`.
 
@@ -38,19 +44,20 @@ For each review (paper or project), the app must produce:
 - Adjacent fields allowed only when instrumental.
 
 ### 2.2 Methods (design-level only)
-- Causal questions must be structured around **DiD**, **SCM**, or **Shift-Share**.
-- Descriptive questions must be structured around **ideal point estimation** (or closely related latent trait models) from behavioral/vote-like data.
-- Outputs must remain at the level of: *design spec + diagnostics/falsification plan + feasible data sources*.
-For Review mode, empirical papers must be evaluated on theory + design + evidence; theoretical papers focus on theory + contribution.
+- **Ideation:** causal questions must be structured around **DiD**, **SCM**, or **Shift-Share**.
+- **Ideation:** descriptive questions must be structured around **ideal point estimation** (or closely related latent trait models) from behavioral/vote-like data.
+- **Review mode:** method-agnostic; evaluate the method used by the paper/project (quantitative, qualitative, or mixed) with design/evidence critique.
+- **Ideation outputs** must remain at the level of: *design spec + diagnostics/falsification plan + feasible data sources*.
+- **Review outputs** must assess theory + design + evidence as written (empirical) or theory + contribution (theoretical), without new analysis.
 
-### 2.3 Ambition requirement
+### 2.3 Ambition requirement (idea dossiers only)
 Ideas must aim for at least one:
 - Mechanism that reconciles or overturns a core debate.
 - New measurement that re-sets an empirical argument.
 - New identification strategy enabling “hard” questions.
 - Reframing that creates a new research agenda.
 
-Incremental ideas must be tagged and deprioritized.
+Incremental ideas must be tagged and deprioritized. Review mode does not require breakthrough-level contributions.
 
 ### 2.4 No execution
 Agents must not:
@@ -65,6 +72,7 @@ They may:
 ---
 
 ## 2.5 Breakthrough Lanes (mandatory tagging + justification)
+Applies to idea dossiers only; not required for paper/project reviews.
 
 ### Purpose
 To prevent drift into “clever but narrow” ideas, every idea dossier must declare a **Breakthrough Lane**.  
@@ -152,6 +160,7 @@ Include this block at the top of every pitch:
 
 
 ## 3) Pipeline (revised; Stage D removed)
+Applies to ideation only; Review mode follows `REVIEW_MODE_SCHEMA.md` and its own validation rules.
 **Stage A — Frontier Mapping**
 - Maintain a living map of IPE frontiers, stuck debates, and measurement/ID bottlenecks.
 
@@ -269,6 +278,7 @@ No gate is passed without a memo.
 ---
 
 ## 7) Gates (quality control)
+Gates below are for idea dossiers only; Review mode uses review-specific validation and scoring.
 ### Gate 1 — Ambition Gate (after ideation)
 Proceed only if the idea cleanly answers:
 1) What would the field believe differently if true?
@@ -303,6 +313,7 @@ Output required: `ideas/<id>/council/*`.
 ---
 
 ## 8) House standards (design-only; minimum expectations)
+Applies to idea dossiers; Review mode may reference these standards but is not restricted to these design families.
 ### 8.1 DiD (design level)
 - Define estimand, treatment timing, unit of analysis.
 - Specify event-study diagnostics and pre-trend evaluation plan.

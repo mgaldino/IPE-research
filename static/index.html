@@ -3,269 +3,373 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IPE Breakthrough Idea Swarm</title>
+  <title>CSEX-USP AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;700&family=Work+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
-<body>
-  <div class="app">
-    <header class="app-header hero">
-      <div class="hero-text">
-        <div class="eyebrow">IPE Research Operations</div>
-        <h1>Breakthrough Idea Swarm</h1>
-        <p>Orchestrate ambitious IPE ideas and APSR-level reviews with design-only rigor and grounded diagnostics.</p>
-        <div class="hero-actions">
-          <span class="chip">Design-only pipeline</span>
-          <span class="chip">Review mode (paper/project)</span>
-          <span class="chip">Grounded memos</span>
+<body data-mode="select">
+  <div class="app-shell">
+    <header class="topbar">
+      <button type="button" class="brand brand-link" id="home-link">
+        <div class="brand-kicker">CSEX-USP AI</div>
+        <div class="brand-title">AI for high-impact academic research</div>
+      </button>
+      <div class="topbar-actions">
+        <div class="session-stack">
+          <button type="button" id="session-cta" class="button-secondary">Unlock session</button>
+          <div class="session-status" id="session-status" data-state="locked">Session locked</div>
         </div>
+        <button type="button" id="mode-switch" class="button-secondary">Switch workflow</button>
       </div>
-      <div class="status" id="session-status">Session locked</div>
     </header>
 
-    <main class="app-grid">
-      <div class="column">
-        <section class="panel panel--session" style="--panel-index: 1;">
-          <div class="panel-header">
-            <h2>Session Control</h2>
-            <span class="panel-meta">Security and runtime</span>
+    <main class="main">
+      <section class="mode-select" id="mode-select">
+        <div class="mode-hero">
+          <div class="eyebrow">Choose a workflow</div>
+          <h1>Pick your primary objective.</h1>
+          <p>
+            Pick the track you need right now. We will reconfigure the workspace around that single objective.
+          </p>
+        </div>
+        <div class="mode-grid">
+          <button type="button" class="mode-card" data-mode-target="idea">
+            <span class="mode-tag">Idea Lab</span>
+            <h2>Design breakthrough IPE research ideas</h2>
+            <p>Design-only dossiers with gates, lanes, and council scoring.</p>
+            <ul class="mode-list">
+              <li>Pitch, design, data plan, positioning, next steps</li>
+              <li>Breakthrough lane enforcement</li>
+              <li>Literature radar for seeds</li>
+            </ul>
+            <span class="mode-cta">Enter Idea Lab</span>
+          </button>
+          <button type="button" class="mode-card" data-mode-target="review-paper">
+            <span class="mode-tag">Paper Review</span>
+            <h2>APSR-level paper review</h2>
+            <p>Grounded critique with section anchors and revision checklist.</p>
+            <ul class="mode-list">
+              <li>350-500 word referee memo</li>
+              <li>3 major + 3 minor issues</li>
+              <li>Evidence quotes tied to section IDs</li>
+            </ul>
+            <span class="mode-cta">Enter Paper Review</span>
+          </button>
+          <button type="button" class="mode-card" data-mode-target="review-project">
+            <span class="mode-tag">Project Review</span>
+            <h2>Project proposal review</h2>
+            <p>Level-aware feedback for IC, Mestrado, Doutorado, and Research Grant.</p>
+            <ul class="mode-list">
+              <li>Design and feasibility critique</li>
+              <li>Grounded checklist with quotes</li>
+              <li>Clear path to revision</li>
+            </ul>
+            <span class="mode-cta">Enter Project Review</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="mode-workspace" id="mode-workspace" hidden>
+        <header class="mode-banner">
+          <div>
+            <div class="eyebrow">Active workflow</div>
+            <h1 id="mode-title">Idea Lab</h1>
+            <p id="mode-subtitle">Generate and vet breakthrough ideas with gates and dossiers.</p>
           </div>
-          <form id="unlock-form" class="form-row compact-row">
-            <input type="password" id="passphrase" placeholder="Enter passphrase" required />
-            <button type="submit">Unlock</button>
-          </form>
-          <div class="hint">Passphrase encrypts provider keys for this session.</div>
-          <div class="hint">Keys are stored encrypted at rest in local SQLite.</div>
-          <div class="action-row">
-            <button type="button" id="restart-server" class="button-secondary">Restart Server</button>
-            <span id="server-message" class="hint"></span>
-          </div>
-        </section>
+        </header>
 
-        <section class="panel panel--providers" style="--panel-index: 2;">
-          <div class="panel-header">
-            <h2>Provider Vault</h2>
-            <span class="panel-meta">Credentials for LLM access</span>
-          </div>
-          <form id="credentials-form" class="form-row">
-            <select id="provider"></select>
-            <input type="text" id="provider-name" placeholder="Label (optional)" />
-            <input type="password" id="api-key" placeholder="API key" required />
-            <button type="submit">Save</button>
-          </form>
-          <div id="credential-list" class="list"></div>
-        </section>
-
-        <section class="panel panel--swarm" style="--panel-index: 3;">
-          <div class="panel-header">
-            <h2>Swarm Launch</h2>
-            <span class="panel-meta">Idea generation and gates</span>
-          </div>
-          <form id="run-form" class="form-grid">
-            <div>
-              <label for="run-provider">Provider</label>
-              <select id="run-provider"></select>
+        <div class="workspace-grid">
+          <section class="panel panel--session" data-mode="all" id="session-control">
+            <div class="panel-header">
+              <h2>Session Control</h2>
+              <span class="panel-meta">Security + runtime</span>
             </div>
-            <div>
-              <label for="run-model">Model</label>
-              <input type="text" id="run-model" placeholder="Default" />
-            </div>
-            <div>
-              <label for="idea-count">Idea count</label>
-              <input type="number" id="idea-count" min="1" max="5" value="1" />
-            </div>
-            <div>
-              <label for="topic-focus">Topic focus (optional)</label>
-              <input type="text" id="topic-focus" placeholder="e.g., financial statecraft" />
-            </div>
-            <div>
-              <label for="run-literature">Literature query (optional)</label>
-              <select id="run-literature">
-                <option value="">No assessment</option>
-              </select>
-            </div>
-            <div>
-              <label for="use-assessment-seeds">Use assessment idea prompts</label>
-              <select id="use-assessment-seeds">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-              </select>
-            </div>
-            <button type="submit">Start Swarm</button>
-          </form>
-          <div id="run-message" class="hint"></div>
-        </section>
-
-        <section class="panel panel--review" style="--panel-index: 4;">
-          <div class="panel-header">
-            <h2>Review Studio</h2>
-            <span class="panel-meta">Paper and project reviews</span>
-          </div>
-          <form id="review-form" class="stack">
-            <label for="review-type">Review type</label>
-            <select id="review-type" required>
-              <option value="paper">Paper</option>
-              <option value="project">Project</option>
-            </select>
-
-            <div id="review-level-wrapper">
-              <label for="review-level">Project level</label>
-              <select id="review-level">
-                <option value="IC">IC</option>
-                <option value="Mestrado">Mestrado</option>
-                <option value="Doutorado">Doutorado</option>
-                <option value="FAPESP">FAPESP</option>
-              </select>
-            </div>
-
-            <label for="review-title">Title</label>
-            <input type="text" id="review-title" placeholder="Optional title" />
-
-            <label for="review-domain">Domain</label>
-            <input type="text" id="review-domain" placeholder="IPE" />
-
-            <label for="review-method">Method family</label>
-            <input type="text" id="review-method" placeholder="DiD / SCM / Qualitative" />
-
-            <label for="review-language">Language</label>
-            <select id="review-language">
-              <option value="en" selected>English</option>
-              <option value="pt">Portuguese</option>
-            </select>
-
-            <label for="review-provider">Provider</label>
-            <select id="review-provider"></select>
-
-            <label for="review-model">Model</label>
-            <input type="text" id="review-model" placeholder="Default" />
-
-            <label for="review-pdf-upload">Upload PDF</label>
-            <input type="file" id="review-pdf-upload" accept=".pdf" />
-            <button type="button" id="review-upload">Upload PDF</button>
-
-            <label for="review-pdf">Attach PDF (existing file in reviews/pdfs/&lt;id&gt;/)</label>
-            <input type="text" id="review-pdf" placeholder="filename.pdf" />
-            <button type="button" id="review-attach">Attach PDF</button>
-
-            <button type="button" id="review-run">Run Review (LLM)</button>
-
-            <button type="submit">Create Review</button>
-            <div id="review-message" class="hint"></div>
-          </form>
-        </section>
-      </div>
-
-      <div class="column">
-        <section class="panel panel--literature" style="--panel-index: 1;">
-          <div class="panel-header">
-            <h2>Literature Radar</h2>
-            <span class="panel-meta">Assessments and PDF ingest</span>
-          </div>
-          <form id="literature-form" class="form-grid">
-            <div>
-              <label for="literature-query">Search query</label>
-              <input type="text" id="literature-query" placeholder="e.g., sanctions enforcement networks" required />
-            </div>
-            <div>
-              <label for="openalex-email">OpenAlex email (required)</label>
-              <input type="email" id="openalex-email" placeholder="you@example.com" required />
-            </div>
-            <div>
-              <label for="semantic-key">Semantic Scholar API key (optional)</label>
-              <input type="password" id="semantic-key" placeholder="API key" />
-            </div>
-            <div>
-              <label for="literature-limit">Per-source limit</label>
-              <input type="number" id="literature-limit" min="5" max="50" value="20" />
-            </div>
-            <div class="source-box">
-              <label>Sources</label>
-              <label><input type="checkbox" id="source-openalex" checked /> OpenAlex</label>
-              <label><input type="checkbox" id="source-crossref" checked /> Crossref</label>
-              <label><input type="checkbox" id="source-semantic" /> Semantic Scholar</label>
-            </div>
-            <div class="source-box">
-              <label>Content filter</label>
-              <label><input type="checkbox" id="include-non-article" /> Include books/chapters</label>
-            </div>
-            <button type="submit">Run Review</button>
-          </form>
-          <div id="literature-message" class="hint"></div>
-          <div class="hint">For institutional PDFs, drop files into literature/pdfs/&lt;query_id&gt;/ and rerun the review.</div>
-          <div class="split">
-            <div>
-              <h3>Queries</h3>
-              <div id="literature-list" class="list"></div>
-            </div>
-            <div>
-              <h3>Assessment</h3>
-              <div id="literature-detail" class="detail">
-                <p>No query selected.</p>
+            <form id="unlock-form" class="form-row compact-row">
+              <input type="password" id="passphrase" placeholder="Enter passphrase" required />
+              <button type="submit" id="unlock-button">Unlock</button>
+            </form>
+            <div class="hint">Passphrase encrypts provider keys for this session.</div>
+            <div class="hint">Keys are stored encrypted at rest in local SQLite.</div>
+            <div class="form-row">
+              <div>
+                <label for="global-provider">LLM provider</label>
+                <select id="global-provider"></select>
+              </div>
+              <div>
+                <label for="global-model">Model (optional)</label>
+                <input type="text" id="global-model" placeholder="Default" />
               </div>
             </div>
-          </div>
-          <div id="literature-works-output" class="detail full-width">
-            <p>No works loaded.</p>
-          </div>
-          <div id="literature-assessment-output" class="detail full-width">
-            <p>No assessment loaded.</p>
-          </div>
-        </section>
+            <div class="hint">Used for idea runs, reviews, and literature synthesis.</div>
+            <div class="action-row">
+              <button type="button" id="restart-server" class="button-secondary">Restart Server</button>
+              <span id="server-message" class="hint"></span>
+            </div>
+          </section>
 
-        <section class="panel panel--runs" style="--panel-index: 2;">
-          <div class="panel-header">
-            <h2>Runs</h2>
-            <span class="panel-meta">Queue and status</span>
-          </div>
-          <div id="run-list" class="list scrollable"></div>
-        </section>
+          <section class="panel panel--providers" data-mode="all">
+            <div class="panel-header">
+              <h2>Provider Vault</h2>
+              <span class="panel-meta">Credentials for LLM access</span>
+            </div>
+            <form id="credentials-form" class="form-row">
+              <select id="provider"></select>
+              <input type="text" id="provider-name" placeholder="Label (optional)" />
+              <input type="password" id="api-key" placeholder="API key" required />
+              <button type="submit">Save</button>
+            </form>
+            <div id="credential-list" class="list"></div>
+          </section>
 
-        <section class="panel panel--ideas" style="--panel-index: 3;">
-          <div class="panel-header">
-            <h2>Ideas</h2>
-            <span class="panel-meta">Filters and selection</span>
-          </div>
-          <div class="action-row">
-            <label for="idea-status-filter">Status</label>
-            <select id="idea-status-filter">
-              <option value="all">All</option>
-              <option value="resubmitted">Resubmitted</option>
-              <option value="none">Unassigned</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div id="idea-list" class="list scrollable"></div>
-        </section>
+          <section class="panel panel--review" data-mode="review-paper review-project">
+            <div class="panel-header">
+              <h2>Review Studio</h2>
+              <span class="panel-meta">Paper + project reviews</span>
+            </div>
+            <form id="review-form" class="stack">
+              <div class="review-field review-field--type">
+                <label for="review-type">Review type</label>
+                <select id="review-type" required>
+                  <option value="paper">Paper</option>
+                  <option value="project">Project</option>
+                </select>
+              </div>
 
-        <section class="panel panel--idea" style="--panel-index: 4;">
-          <div class="panel-header">
-            <h2>Idea Dossier</h2>
-            <span class="panel-meta">Pitches, designs, and memos</span>
-          </div>
-          <div id="idea-detail" class="detail">
-            <p>Select an idea to view its dossier.</p>
-          </div>
-        </section>
+              <div id="review-level-wrapper">
+                <label for="review-level">Project level</label>
+                <select id="review-level">
+                  <option value="IC">IC</option>
+                  <option value="Mestrado">Mestrado</option>
+                  <option value="Doutorado">Doutorado</option>
+                  <option value="Research Grant">Research Grant</option>
+                </select>
+              </div>
 
-        <section class="panel panel--reviews" style="--panel-index: 4;">
-          <div class="panel-header">
-            <h2>Review Archive</h2>
-            <span class="panel-meta">Stored reviews and details</span>
-          </div>
-          <div class="split">
+              <label for="review-title">Title</label>
+              <input type="text" id="review-title" placeholder="Optional title" />
+
+              <label for="review-language">Review language</label>
+              <select id="review-language">
+                <option value="en" selected>English</option>
+                <option value="pt">Portuguese</option>
+              </select>
+              <div class="hint">Output language for the review (not the paper).</div>
+
+              <div class="persona-block">
+                <div class="eyebrow">Reviewer personas</div>
+                <div class="form-grid persona-grid">
+                  <div>
+                    <label for="review-persona-1">Reviewer 1</label>
+                    <select id="review-persona-1">
+                      <option value="theory_positioning" selected>Theory &amp; Positioning</option>
+                      <option value="identification_design">Identification &amp; Design</option>
+                      <option value="measurement_constructs">Measurement &amp; Constructs</option>
+                      <option value="contribution_agenda">Contribution &amp; Agenda</option>
+                      <option value="feasibility_clarity">Feasibility &amp; Clarity</option>
+                      <option value="evidence_robustness">Evidence &amp; Robustness</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="review-persona-2">Reviewer 2</label>
+                    <select id="review-persona-2">
+                      <option value="theory_positioning">Theory &amp; Positioning</option>
+                      <option value="identification_design" selected>Identification &amp; Design</option>
+                      <option value="measurement_constructs">Measurement &amp; Constructs</option>
+                      <option value="contribution_agenda">Contribution &amp; Agenda</option>
+                      <option value="feasibility_clarity">Feasibility &amp; Clarity</option>
+                      <option value="evidence_robustness">Evidence &amp; Robustness</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="review-persona-3">Reviewer 3</label>
+                    <select id="review-persona-3">
+                      <option value="theory_positioning">Theory &amp; Positioning</option>
+                      <option value="identification_design">Identification &amp; Design</option>
+                      <option value="measurement_constructs" selected>Measurement &amp; Constructs</option>
+                      <option value="contribution_agenda">Contribution &amp; Agenda</option>
+                      <option value="feasibility_clarity">Feasibility &amp; Clarity</option>
+                      <option value="evidence_robustness">Evidence &amp; Robustness</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="hint">Run Review generates all three personas in one pass.</div>
+              </div>
+
+              <label for="review-pdf-upload">Upload PDF (auto-index on Run Review)</label>
+              <input type="file" id="review-pdf-upload" accept=".pdf" />
+              <div class="hint">Run Review uploads the file to reviews/pdfs/&lt;id&gt;/, indexes sections, and resets artifacts.</div>
+
+              <button type="submit" id="review-run">Run Review</button>
+              <div id="review-message" class="hint"></div>
+            </form>
+          </section>
+
+          <section class="panel panel--literature" data-mode="idea">
+            <div class="panel-header">
+              <h2>Literature Radar</h2>
+              <span class="panel-meta">Assessments + PDF ingest</span>
+            </div>
+            <form id="literature-form" class="form-grid">
+              <div>
+                <label for="literature-query">Search query</label>
+                <input type="text" id="literature-query" placeholder="e.g., sanctions enforcement networks" required />
+              </div>
+              <div>
+                <label for="openalex-email">OpenAlex email (required)</label>
+                <input type="email" id="openalex-email" placeholder="you@example.com" required />
+              </div>
+              <div>
+                <label for="semantic-key">Semantic Scholar API key (optional)</label>
+                <input type="password" id="semantic-key" placeholder="API key" />
+              </div>
+              <div>
+                <label for="literature-limit">Per-source limit</label>
+                <input type="number" id="literature-limit" min="5" max="50" value="20" />
+              </div>
+              <div class="source-box">
+                <label>Sources</label>
+                <label><input type="checkbox" id="source-openalex" checked /> OpenAlex</label>
+                <label><input type="checkbox" id="source-crossref" checked /> Crossref</label>
+                <label><input type="checkbox" id="source-semantic" /> Semantic Scholar</label>
+              </div>
+              <div class="source-box">
+                <label>Content filter</label>
+                <label><input type="checkbox" id="include-non-article" /> Include books/chapters</label>
+              </div>
+              <button type="submit" class="literature-submit">Run Review</button>
+            </form>
+            <div id="literature-message" class="hint"></div>
+            <div class="hint">For institutional PDFs, drop files into literature/pdfs/&lt;query_id&gt;/ and rerun the review.</div>
+            <div class="split">
+              <div>
+                <h3>Queries</h3>
+                <div id="literature-list" class="list"></div>
+              </div>
+              <div>
+                <h3>Assessment</h3>
+                <div id="literature-detail" class="detail">
+                  <p>No query selected.</p>
+                </div>
+              </div>
+            </div>
+            <div id="literature-works-output" class="detail full-width">
+              <p>No works loaded.</p>
+            </div>
+          </section>
+
+          <section class="panel panel--reviews" data-mode="review-paper review-project">
+            <div class="panel-header">
+              <h2>Review Archive</h2>
+              <span class="panel-meta">Stored reviews + detail</span>
+            </div>
             <div>
               <h3>Reviews</h3>
-              <div id="review-list" class="list"></div>
+              <div id="review-list" class="list scrollable"></div>
             </div>
-            <div>
-              <h3>Review Detail</h3>
-              <div id="review-warning" class="hint"></div>
-              <div id="review-detail" class="detail">
-                <p>Select a review to view its details.</p>
+          </section>
+
+          <section class="panel panel--review-detail" data-mode="review-paper review-project">
+            <div class="panel-header">
+              <h2>Review Detail</h2>
+            </div>
+            <div id="review-warning" class="hint"></div>
+            <div id="review-detail" class="detail">
+              <p>Select a review to view its details.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="synthesis-view" id="synthesis-view" hidden>
+        <div class="synthesis-header">
+          <div class="eyebrow">Literature synthesis</div>
+          <h1 id="synthesis-title">Synthesis</h1>
+          <p id="synthesis-subtitle">Select a query to view its synthesis.</p>
+        </div>
+        <div class="action-row">
+          <button type="button" id="synthesis-back" class="button-secondary">Back to query</button>
+        </div>
+        <div id="synthesis-content" class="detail dashed-subtle">
+          <p>No synthesis loaded.</p>
+        </div>
+        <div class="synthesis-panels">
+          <section class="panel panel--swarm" data-mode="idea">
+            <div class="panel-header">
+              <h2>Idea Run</h2>
+              <span class="panel-meta">Idea generation + gates</span>
+            </div>
+            <form id="run-form" class="form-grid">
+              <div>
+                <label for="idea-count">Idea count</label>
+                <input type="number" id="idea-count" min="1" max="5" value="1" />
               </div>
+              <div>
+                <label for="topic-focus">Topic focus (optional)</label>
+                <input type="text" id="topic-focus" placeholder="e.g., financial statecraft" />
+              </div>
+              <div>
+                <label for="topic-exclude">Exclude topics (optional)</label>
+                <input type="text" id="topic-exclude" placeholder="e.g., tariffs; oil" />
+              </div>
+              <div>
+                <label for="run-literature">Literature query (optional)</label>
+                <select id="run-literature">
+                  <option value="">No synthesis</option>
+                </select>
+              </div>
+              <div>
+                <label for="use-assessment-seeds">Use synthesis idea prompts</label>
+                <select id="use-assessment-seeds">
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
+              <button type="submit">Start Swarm</button>
+            </form>
+            <div id="run-message" class="hint"></div>
+          </section>
+
+          <section class="panel panel--runs" data-mode="idea">
+            <div class="panel-header">
+              <h2>Runs</h2>
+              <span class="panel-meta">Queue + status</span>
             </div>
-          </div>
-        </section>
-      </div>
+            <div id="run-list" class="list scrollable"></div>
+          </section>
+
+          <section class="panel panel--ideas" data-mode="idea">
+            <div class="panel-header">
+              <h2>Ideas</h2>
+              <span class="panel-meta">Filters + selection</span>
+            </div>
+            <div class="action-row">
+              <label for="idea-status-filter">Status</label>
+              <select id="idea-status-filter">
+                <option value="all">All</option>
+                <option value="resubmitted">Resubmitted</option>
+                <option value="none">Unassigned</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div id="idea-list" class="list scrollable"></div>
+          </section>
+
+          <section class="panel panel--idea" data-mode="idea">
+            <div class="panel-header">
+              <h2>Idea Dossier</h2>
+              <span class="panel-meta">Pitches, designs, memos</span>
+            </div>
+            <div id="idea-detail" class="detail">
+              <p>Select an idea to view its dossier.</p>
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
   </div>
 

@@ -15,6 +15,7 @@ Verdict mapping:
 - 8-10: Revise
 - 5-7: Major Revise
 - 1-4: Reject
+Review mode is method-agnostic and does not require breakthrough-level contributions; lane and breakthrough fields do not apply.
 
 ## Scoring scale (1-10)
 - 9-10: field-shaping, credible design, unusually clear stakes
@@ -23,7 +24,7 @@ Verdict mapping:
 - 3-4: incremental, unclear, or weak design logic
 - 1-2: not viable for this mission
 
-## Required scores (PI shortlist defaults)
+## Required scores (idea mode; PI shortlist defaults)
 - Novelty/agenda-setting: >= 8
 - Theoretical stakes clarity: >= 7
 - Design credibility: >= 8
@@ -32,7 +33,7 @@ Verdict mapping:
 - Lane Fit: >= 7
 - Breakthrough Plausibility: >= 8
 
-## Evaluation fields (required for all council memos)
+## Evaluation fields (required for idea council memos)
 1) Novelty/agenda-setting
 2) Theoretical stakes clarity
 3) Design credibility
@@ -42,7 +43,7 @@ Verdict mapping:
 7) Breakthrough Plausibility (likelihood the idea could reorient debate)
 8) Overall verdict (short, use: accept / revise / reject)
 
-## Veto rules
+## Veto rules (idea mode)
 - Novelty < 8 is presumed outside mission unless PI override.
 - Design credibility < 7 is an automatic reject at Gate 4.
 - Lane Fit < 7 is an automatic reject at Gate 1 unless re-laned.

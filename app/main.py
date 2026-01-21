@@ -43,7 +43,7 @@ from .models import (
     RunStatus,
 )
 from .orchestrator import DEFAULT_MODELS, run_swarm, PROVIDERS
-from .literature import EXCLUDED_WORK_TYPES, rebuild_assessment, run_literature_query
+from .literature import EXCLUDED_WORK_TYPES, run_literature_query
 from .literature import extract_pdf_text
 from .review_ingest import extract_pdf_pages, split_sections, build_grounded_artifacts
 from .review_validation import split_review_output, validate_review_output
@@ -54,6 +54,7 @@ from .prompts import (
     build_literature_synthesis_prompt,
     build_review_prompt,
 )
+from .review_personas import DEFAULT_REVIEW_PERSONAS, REVIEW_PERSONAS, persona_label
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 
@@ -107,6 +108,7 @@ class ReviewAttachPdfInput(BaseModel):
 class ReviewRunInput(BaseModel):
     provider: str
     model: Optional[str] = None
+    personas: Optional[List[str]] = None
 
 
 class GateUpdate(BaseModel):
@@ -351,7 +353,32 @@ async def get_idea(idea_id: int) -> dict:
 @app.get("/api/reviews")
 async def list_reviews() -> List[dict]:
     with Session(engine) as session:
-        reviews = session.exec(select(Review).order_by(Review.created_at.desc())).all()
+        reviews = session.exec(
+            select(Review).order_by(Review.created_at.desc()).limit(5)
+        ).all()
+        review_ids = [review.id for review in reviews if review.id is not None]
+        personas_by_review: dict[int, list[dict]] = {}
+        if review_ids:
+            artifacts = session.exec(
+                select(ReviewArtifact).where(ReviewArtifact.review_id.in_(review_ids))
+            ).all()
+            seen = set()
+            for artifact in artifacts:
+                if artifact.review_id is None:
+                    continue
+                key = (artifact.review_id, artifact.slot, artifact.persona)
+                if key in seen:
+                    continue
+                seen.add(key)
+                if artifact.persona or artifact.slot:
+                    personas_by_review.setdefault(artifact.review_id, []).append(
+                        {
+                            "slot": artifact.slot,
+                            "persona": artifact.persona,
+                        }
+                    )
+            for persona_list in personas_by_review.values():
+                persona_list.sort(key=lambda item: (item["slot"] or 0, item["persona"] or ""))
     return [
         {
             "id": review.id,
@@ -364,6 +391,7 @@ async def list_reviews() -> List[dict]:
             "language": review.language,
             "created_at": review.created_at.isoformat(),
             "updated_at": review.updated_at.isoformat(),
+            "personas": personas_by_review.get(review.id or 0, []),
         }
         for review in reviews
     ]
@@ -420,7 +448,12 @@ async def get_review(review_id: int) -> dict:
             "updated_at": review.updated_at.isoformat(),
         },
         "artifacts": [
-            {"kind": artifact.kind.value, "content": artifact.content}
+            {
+                "kind": artifact.kind.value,
+                "content": artifact.content,
+                "persona": artifact.persona,
+                "slot": artifact.slot,
+            }
             for artifact in artifacts
         ],
         "gates": [
@@ -516,7 +549,12 @@ async def upload_pdf_to_review(review_id: int, file: UploadFile) -> dict:
     if not content:
         raise HTTPException(status_code=400, detail="Empty file")
     target_path.write_bytes(content)
-    return {"filename": file.filename}
+    result = await attach_pdf_to_review(
+        review_id,
+        ReviewAttachPdfInput(filename=file.filename),
+    )
+    result["filename"] = file.filename
+    return result
 
 
 @app.post("/api/reviews/{review_id}/run")
@@ -548,53 +586,81 @@ async def run_review(review_id: int, payload: ReviewRunInput) -> dict:
             raise HTTPException(status_code=400, detail="Missing credentials for provider")
         api_key = decrypt_secret(app.state.passphrase, credential.api_key_encrypted, credential.salt)
 
-        prompt = build_review_prompt(
-            review_type=review.review_type.value,
-            level=review.level.value if review.level else None,
-            title=review.title,
-            domain=review.domain,
-            method_family=review.method_family,
-            language=review.language or "en",
-            sections=[
-                {
-                    "section_id": section.section_id,
-                    "title": section.title,
-                    "page_start": section.page_start,
-                    "page_end": section.page_end,
-                    "excerpt": section.excerpt,
-                }
-                for section in sections
-            ],
-        )
-        response = await provider_impl.generate(prompt, model, api_key)
-        memo, checklist = split_review_output(response.content)
-        errors = validate_review_output(
-            checklist,
-            [section.section_id for section in sections],
-        )
-        if errors:
-            checklist = "\n".join([
-                checklist.strip(),
-                "",
-                "VALIDATION_NOTES",
-                *[f"- {error}" for error in errors],
+        personas = payload.personas or DEFAULT_REVIEW_PERSONAS
+        if not personas:
+            personas = DEFAULT_REVIEW_PERSONAS
+        invalid = [persona for persona in personas if persona not in REVIEW_PERSONAS]
+        if invalid:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown personas: {', '.join(invalid)}",
+            )
+        section_payload = [
+            {
+                "section_id": section.section_id,
+                "title": section.title,
+                "page_start": section.page_start,
+                "page_end": section.page_end,
+                "excerpt": section.excerpt,
+            }
+            for section in sections
+        ]
+        section_ids = [section.section_id for section in sections]
+        stored_artifacts: list[ReviewArtifact] = []
+        errors: list[str] = []
+
+        for slot, persona in enumerate(personas, start=1):
+            persona_heading = f"Reviewer persona: {persona_label(persona)}"
+            prompt = build_review_prompt(
+                review_type=review.review_type.value,
+                level=review.level.value if review.level else None,
+                title=review.title,
+                domain=review.domain,
+                method_family=review.method_family,
+                language=review.language or "en",
+                sections=section_payload,
+                persona=persona,
+            )
+            response = await provider_impl.generate(prompt, model, api_key)
+            memo, checklist = split_review_output(response.content)
+            memo_lines = memo.splitlines()
+            first_non_empty = next((line for line in memo_lines if line.strip()), "")
+            if persona_heading.lower() not in first_non_empty.lower():
+                memo = f"{persona_heading}\n{memo}".strip()
+            persona_errors = validate_review_output(checklist, section_ids)
+            if persona_errors:
+                checklist = "\n".join([
+                    checklist.strip(),
+                    "",
+                    "VALIDATION_NOTES",
+                    *[f"- {error}" for error in persona_errors],
+                ])
+                errors.extend([
+                    f"{persona_label(persona)} (Reviewer {slot}): {error}"
+                    for error in persona_errors
+                ])
+
+            stored_artifacts.extend([
+                ReviewArtifact(
+                    review_id=review_id,
+                    kind=ReviewArtifactKind.referee_memo,
+                    content=memo,
+                    persona=persona,
+                    slot=slot,
+                ),
+                ReviewArtifact(
+                    review_id=review_id,
+                    kind=ReviewArtifactKind.revision_checklist,
+                    content=checklist,
+                    persona=persona,
+                    slot=slot,
+                ),
             ])
 
         session.exec(
             ReviewArtifact.__table__.delete().where(ReviewArtifact.review_id == review_id)
         )
-        session.add_all([
-            ReviewArtifact(
-                review_id=review_id,
-                kind=ReviewArtifactKind.referee_memo,
-                content=memo,
-            ),
-            ReviewArtifact(
-                review_id=review_id,
-                kind=ReviewArtifactKind.revision_checklist,
-                content=checklist,
-            ),
-        ])
+        session.add_all(stored_artifacts)
         review.status = ReviewStatus.completed
         review.updated_at = datetime.now(timezone.utc)
         session.add(review)
@@ -1302,20 +1368,6 @@ async def get_literature_query(query_id: int) -> dict:
     }
 
 
-@app.post("/api/literature/queries/{query_id}/assessment")
-async def rebuild_query_assessment(query_id: int, background_tasks: BackgroundTasks) -> dict:
-    with Session(engine) as session:
-        query = session.get(LiteratureQuery, query_id)
-        if not query:
-            raise HTTPException(status_code=404, detail="Query not found")
-        query.status = "processing"
-        query.updated_at = datetime.now(timezone.utc)
-        session.add(query)
-        session.commit()
-    background_tasks.add_task(rebuild_assessment, query_id, BASE_DIR)
-    return {"status": "queued"}
-
-
 @app.post("/api/literature/queries/{query_id}/assessment/llm")
 async def rebuild_query_assessment_llm(query_id: int, payload: LlmAssessmentInput) -> dict:
     if app.state.passphrase is None:
@@ -1450,9 +1502,11 @@ async def delete_literature_query(query_id: int) -> dict:
         session.delete(query)
         session.commit()
 
-    assessment_path = BASE_DIR / "literature" / "assessments" / f"assessment_{query_id}.md"
-    if assessment_path.exists():
-        assessment_path.unlink()
+    assessment_dir = BASE_DIR / "literature" / "assessments"
+    for name in (f"assessment_{query_id}_llm.md", f"assessment_{query_id}.md"):
+        path = assessment_dir / name
+        if path.exists():
+            path.unlink()
     shutil.rmtree(BASE_DIR / "literature" / "oa" / str(query_id), ignore_errors=True)
     shutil.rmtree(BASE_DIR / "literature" / "pdfs" / str(query_id), ignore_errors=True)
     return {"status": "deleted"}

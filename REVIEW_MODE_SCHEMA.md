@@ -1,17 +1,21 @@
-# Review Mode v1: Minimal Schema + Grounding Rules
+# Review Mode v2: Persona Reviews + Grounding Rules
 
-Scope: IPE-only. Reuse existing council personas and design-only constraints.
+Scope: IPE-first. Review mode is method-agnostic and does not require breakthrough-level contributions. No execution or new analysis.
 
 ## Inputs
 - PDF (required)
-- Optional metadata:
-  - Target outlet tier (e.g., top-5, field journal)
-  - Contribution type (theory/mechanism, identification, measurement)
-  - Method family (DiD/SCM/Shift-Share/Ideal points/qualitative/mixed/other)
-  - Review type: `paper` or `project`
-  - If `project`: level = `IC` | `Mestrado` | `Doutorado` | `FAPESP`
-  - If `paper`: level is ignored (single standard)
-  - Language: `en` or `pt` (default `en`)
+- Review type: `paper` or `project`
+- If `project`: level = `IC` | `Mestrado` | `Doutorado` | `Research Grant`
+- If `paper`: level is ignored (single standard)
+- Language: `en` or `pt` (default `en`)
+- Reviewer personas: choose 3 from 6 (duplicates allowed with confirmation)
+  - Theory & Positioning
+  - Identification & Design
+  - Measurement & Constructs
+  - Contribution & Agenda
+  - Feasibility & Clarity
+  - Evidence & Robustness
+- LLM provider/model selected in Session Control (shared across workflows)
 
 ## Ingestion output (internal)
 - Structured sections with stable IDs:
@@ -26,11 +30,10 @@ Scope: IPE-only. Reuse existing council personas and design-only constraints.
 - Each section: text, page range, and short excerpt list (for quoting).
 
 ## Review artifacts (outputs)
+For each selected persona (3 total):
 1) **Referee Memo** (fixed template, 350–500 words)
    - Summary (2–3 sentences)
-   - Contribution + novelty assessment
-   - Design/ID assessment (if empirical)
-   - Evidence/measurement assessment (if empirical)
+   - Persona-focused assessment (based on persona guidance)
    - Verdict (reject / revise / major revise)
    - Overall score (X/10)
 
@@ -48,19 +51,13 @@ Scope: IPE-only. Reuse existing council personas and design-only constraints.
 - No claims about results unless explicitly stated in the text.
 - No new theory or execution beyond design-level assessment.
 
-## Gate logic (Review mode)
-- Gate R1: Contribution clarity (>= threshold)
-- Gate R2: Design credibility (>= threshold)
-- Gate R3: Measurement/construct validity (if applicable)
-- Gate R4: Feasibility/clarity
-
 ## Review-type distinctions
 - **Paper**: single standard; output targets a journal-style referee report.
 - **Project**: level-specific expectations in the Referee Memo and Checklist
   - IC: emphasize clarity, feasibility, and scope discipline.
   - Mestrado: emphasize coherent theory + feasible design.
   - Doutorado: emphasize agenda-setting contribution + identification depth.
-  - FAPESP: emphasize feasibility, policy relevance, and execution risk.
+  - Research Grant: emphasize feasibility, policy relevance, and execution risk.
 
 ## Validation behavior
 - If the LLM output violates format requirements (missing Section IDs or Quote lines),

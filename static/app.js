@@ -6,16 +6,202 @@ const state = {
   selectedReviewId: null,
   localPdfs: [],
   runFormState: {
-    provider: "",
-    model: "",
     ideaCount: "",
     topicFocus: "",
     topicExclude: "",
     literatureQueryId: "",
     useAssessmentSeeds: "",
   },
+  llmSettings: {
+    provider: "",
+    model: "",
+  },
+  synthesisCache: {
+    queryId: null,
+    title: "",
+    content: "",
+  },
   llmAssessmentState: {},
 };
+
+const MODE_COPY = {
+  idea: {
+    title: "Idea Lab",
+    subtitle: "Generate and vet breakthrough IPE ideas with gates and dossiers.",
+  },
+  "review-paper": {
+    title: "Paper Review",
+    subtitle: "Grounded APSR-level critique with section-anchored revisions.",
+  },
+  "review-project": {
+    title: "Project Review",
+    subtitle: "Level-aware review for IC, Mestrado, Doutorado, and Research Grant.",
+  },
+  setup: {
+    title: "Session Setup",
+    subtitle: "Unlock access and save provider credentials before choosing a workflow.",
+  },
+};
+
+const REVIEW_PERSONA_LABELS = {
+  theory_positioning: "Theory & Positioning",
+  identification_design: "Identification & Design",
+  measurement_constructs: "Measurement & Constructs",
+  contribution_agenda: "Contribution & Agenda",
+  feasibility_clarity: "Feasibility & Clarity",
+  evidence_robustness: "Evidence & Robustness",
+};
+
+function formatPersonaLabel(persona) {
+  if (!persona) {
+    return "Reviewer";
+  }
+  return REVIEW_PERSONA_LABELS[persona] || persona;
+}
+
+function formatPersonaShort(entry) {
+  if (!entry) {
+    return "";
+  }
+  const label = formatPersonaLabel(entry.persona);
+  if (entry.slot) {
+    return `R${entry.slot}: ${label}`;
+  }
+  return label;
+}
+
+function setMode(mode) {
+  const normalized = MODE_COPY[mode] ? mode : "select";
+  document.body.dataset.mode = normalized;
+
+  document.querySelectorAll("[data-mode]").forEach((panel) => {
+    const modes = panel.dataset.mode.split(" ");
+    const shouldShow = modes.includes("all") || modes.includes(normalized);
+    panel.hidden = !shouldShow;
+  });
+
+  const selector = document.getElementById("mode-select");
+  const workspace = document.getElementById("mode-workspace");
+  const synthesisView = document.getElementById("synthesis-view");
+  if (synthesisView) {
+    synthesisView.hidden = true;
+  }
+  if (selector && workspace) {
+    const isSelect = normalized === "select";
+    selector.hidden = !isSelect;
+    workspace.hidden = isSelect;
+  }
+
+  const copy = MODE_COPY[normalized];
+  if (copy) {
+    const title = document.getElementById("mode-title");
+    const subtitle = document.getElementById("mode-subtitle");
+    if (title) {
+      title.textContent = copy.title;
+    }
+    if (subtitle) {
+      subtitle.textContent = copy.subtitle;
+    }
+  }
+
+  const typeSelect = document.getElementById("review-type");
+  if (typeSelect) {
+    if (normalized === "review-paper") {
+      typeSelect.value = "paper";
+      typeSelect.disabled = true;
+    } else if (normalized === "review-project") {
+      typeSelect.value = "project";
+      typeSelect.disabled = true;
+    } else {
+      typeSelect.disabled = false;
+    }
+    updateReviewLevelVisibility();
+  }
+
+  localStorage.setItem("codexcouncil-mode", normalized);
+  if (normalized !== "select" && normalized !== "setup") {
+    localStorage.setItem("codexcouncil-last-mode", normalized);
+  }
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function showSynthesisView() {
+  const view = document.getElementById("synthesis-view");
+  const workspace = document.getElementById("mode-workspace");
+  if (!view || !workspace) {
+    return;
+  }
+  view.hidden = false;
+  workspace.hidden = true;
+  const title = document.getElementById("synthesis-title");
+  const subtitle = document.getElementById("synthesis-subtitle");
+  const content = document.getElementById("synthesis-content");
+  if (title) {
+    title.textContent = state.synthesisCache.title || "Synthesis";
+  }
+  if (subtitle) {
+    subtitle.textContent = state.synthesisCache.queryId
+      ? `Query #${state.synthesisCache.queryId}`
+      : "Select a query to view its synthesis.";
+  }
+  if (content) {
+    if (state.synthesisCache.content) {
+      content.innerHTML = `<pre>${state.synthesisCache.content}</pre>`;
+    } else {
+      content.innerHTML = "<p>No synthesis loaded.</p>";
+    }
+  }
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function hideSynthesisView() {
+  const view = document.getElementById("synthesis-view");
+  const workspace = document.getElementById("mode-workspace");
+  if (!view || !workspace) {
+    return;
+  }
+  view.hidden = true;
+  workspace.hidden = false;
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function initModeSwitcher() {
+  document.querySelectorAll("[data-mode-target]").forEach((card) => {
+    card.addEventListener("click", () => setMode(card.dataset.modeTarget));
+  });
+  const switcher = document.getElementById("mode-switch");
+  if (switcher) {
+    switcher.addEventListener("click", () => setMode("select"));
+  }
+  const homeLink = document.getElementById("home-link");
+  if (homeLink) {
+    homeLink.addEventListener("click", () => setMode("select"));
+  }
+  const sessionCta = document.getElementById("session-cta");
+  if (sessionCta) {
+    sessionCta.addEventListener("click", () => {
+      const status = document.getElementById("session-status");
+      const isLocked = status ? status.dataset.state !== "unlocked" : true;
+      if (document.body.dataset.mode === "select") {
+        setMode("setup");
+      }
+      const sessionPanel = document.getElementById("session-control");
+      if (sessionPanel) {
+        sessionPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      const passphraseInput = document.getElementById("passphrase");
+      if (passphraseInput && isLocked) {
+        setTimeout(() => passphraseInput.focus(), 250);
+      }
+    });
+  }
+  const synthesisBack = document.getElementById("synthesis-back");
+  if (synthesisBack) {
+    synthesisBack.addEventListener("click", hideSynthesisView);
+  }
+  const saved = localStorage.getItem("codexcouncil-mode");
+  setMode(saved || "select");
+}
 
 async function fetchJSON(url, options = {}) {
   const response = await fetch(url, {
@@ -45,21 +231,55 @@ async function uploadFile(url, file) {
 
 function setSessionStatus(text, isUnlocked = false) {
   const status = document.getElementById("session-status");
+  if (!status) {
+    return;
+  }
   status.textContent = text;
-  status.style.background = isUnlocked ? "#d9ead3" : "#f0ebe1";
+  status.dataset.state = isUnlocked ? "unlocked" : "locked";
+  const passphraseInput = document.getElementById("passphrase");
+  const unlockButton = document.getElementById("unlock-button");
+  const sessionCta = document.getElementById("session-cta");
+  if (isUnlocked) {
+    if (passphraseInput) {
+      passphraseInput.value = "";
+      passphraseInput.placeholder = "Session unlocked";
+      passphraseInput.disabled = true;
+    }
+    if (unlockButton) {
+      unlockButton.textContent = "Unlocked";
+      unlockButton.disabled = true;
+    }
+    if (sessionCta) {
+      sessionCta.textContent = "Session unlocked";
+      sessionCta.disabled = true;
+    }
+  } else {
+    if (passphraseInput) {
+      passphraseInput.disabled = false;
+      passphraseInput.placeholder = "Enter passphrase";
+    }
+    if (unlockButton) {
+      unlockButton.textContent = "Unlock";
+      unlockButton.disabled = false;
+    }
+    if (sessionCta) {
+      sessionCta.textContent = "Unlock session";
+      sessionCta.disabled = false;
+    }
+  }
 }
 
 async function loadProviders() {
   const data = await fetchJSON("/api/providers");
   state.providers = data;
-  const selectedProvider = document.getElementById("provider").value;
-  const selectedRunProvider = document.getElementById("run-provider").value;
-  const runModelInput = document.getElementById("run-model");
-  const runModelValue = runModelInput.value;
+  const credentialSelect = document.getElementById("provider");
+  const globalProvider = document.getElementById("global-provider");
+  const globalModel = document.getElementById("global-model");
+  const selectedProvider = credentialSelect?.value || "";
+  const savedGlobal = state.llmSettings.provider;
   const providerSelects = [
-    document.getElementById("provider"),
-    document.getElementById("run-provider"),
-    document.getElementById("review-provider"),
+    credentialSelect,
+    globalProvider,
   ];
   providerSelects.forEach((select) => {
     if (!select) {
@@ -74,33 +294,37 @@ async function loadProviders() {
     });
   });
 
-  const runProvider = document.getElementById("run-provider");
-  runProvider.addEventListener("change", () => {
-    const selected = state.providers.find((p) => p.name === runProvider.value);
-    const modelInput = document.getElementById("run-model");
-    modelInput.placeholder = selected ? selected.default_model : "Default";
-    if (!modelInput.value && selected && selected.default_model) {
-      modelInput.value = selected.default_model;
-    }
-  });
   if (selectedProvider) {
-    document.getElementById("provider").value = selectedProvider;
+    credentialSelect.value = selectedProvider;
   }
-  if (selectedRunProvider) {
-    runProvider.value = selectedRunProvider;
-  }
-  runModelInput.value = runModelValue;
-  if (state.providers.length) {
-    const selected = state.providers[0];
-    document.getElementById("run-model").placeholder = selected.default_model || "Default";
-    if (!runModelInput.value && selected.default_model) {
-      runModelInput.value = selected.default_model;
+  if (globalProvider) {
+    if (savedGlobal) {
+      globalProvider.value = savedGlobal;
     }
-    const reviewModelInput = document.getElementById("review-model");
-    if (reviewModelInput) {
-      reviewModelInput.placeholder = selected.default_model || "Default";
-      if (!reviewModelInput.value && selected.default_model) {
-        reviewModelInput.value = selected.default_model;
+    globalProvider.addEventListener("change", () => {
+      const selected = state.providers.find((p) => p.name === globalProvider.value);
+      if (globalModel) {
+        globalModel.placeholder = selected ? selected.default_model : "Default";
+        if (!globalModel.value && selected && selected.default_model) {
+          globalModel.value = selected.default_model;
+        }
+      }
+      captureLlmSettings();
+      saveLlmSettings();
+    });
+  }
+  if (globalModel) {
+    globalModel.value = state.llmSettings.model || "";
+  }
+  if (state.providers.length && globalProvider) {
+    const selected = state.providers.find((p) => p.name === globalProvider.value) || state.providers[0];
+    if (globalProvider && !globalProvider.value) {
+      globalProvider.value = selected.name;
+    }
+    if (globalModel) {
+      globalModel.placeholder = selected.default_model || "Default";
+      if (!globalModel.value && selected.default_model) {
+        globalModel.value = selected.default_model;
       }
     }
   }
@@ -201,10 +425,13 @@ async function loadReviews() {
       item.classList.add("selected");
     }
     const level = review.level ? ` | ${review.level}` : "";
+    const personaLine = (review.personas || []).length
+      ? `<div>${review.personas.map(formatPersonaShort).join(" | ")}</div>`
+      : "";
     item.innerHTML = `
       <strong>${review.title || "Untitled Review"}</strong>
       <div>${review.review_type}${level}</div>
-      <div>${review.domain || "No domain"} | ${review.method_family || "No method"}</div>
+      ${personaLine}
       <div>${review.created_at}</div>
     `;
     item.addEventListener("click", () => loadReviewDetail(review.id));
@@ -232,17 +459,81 @@ async function loadReviewDetail(reviewId) {
   if (warning && artifactText.includes("VALIDATION_NOTES")) {
     warning.textContent = "Review output failed validation; see notes in checklist.";
   }
+
+  const formatKind = (kind) =>
+    kind
+      .toLowerCase()
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+  const stripArtifactHeading = (content, kind) => {
+    if (!content) {
+      return "";
+    }
+    const lines = content.split(/\r?\n/);
+    let start = 0;
+    while (start < lines.length && !lines[start].trim()) {
+      start += 1;
+    }
+    const first = (lines[start] || "").trim();
+    const normalizedKind = kind.replace(/_/g, " ").toUpperCase();
+    const normalizedFirst = first.replace(/\s+/g, " ").toUpperCase();
+    if (normalizedFirst.startsWith(normalizedKind)) {
+      start += 1;
+    }
+    const cleaned = lines.slice(start).join("\n").trim();
+    return cleaned || content.trim();
+  };
+
+  const grouped = new Map();
+  (data.artifacts || []).forEach((artifact) => {
+    const key = `${artifact.slot || 0}|${artifact.persona || ""}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        slot: artifact.slot,
+        persona: artifact.persona,
+        items: [],
+      });
+    }
+    grouped.get(key).items.push(artifact);
+  });
+
+  const sortKinds = (items) => {
+    const order = {
+      REFEREE_MEMO: 1,
+      REVISION_CHECKLIST: 2,
+    };
+    return items.sort((a, b) => (order[a.kind] || 99) - (order[b.kind] || 99));
+  };
+
+  const artifactBlocks = Array.from(grouped.values())
+    .sort((a, b) => (a.slot || 0) - (b.slot || 0))
+    .map((group) => {
+      const personaLabel = group.persona ? formatPersonaLabel(group.persona) : "Review Output";
+      const heading = group.slot ? `Reviewer ${group.slot} — ${personaLabel}` : personaLabel;
+      const items = sortKinds(group.items)
+        .map((artifact) => {
+          const label = formatKind(artifact.kind);
+          const content = stripArtifactHeading(artifact.content || "", artifact.kind);
+          return `<div class="artifact-block"><h4>${label}</h4><pre>${content || "No content yet."}</pre></div>`;
+        })
+        .join("");
+      return `<div class="artifact-group"><h4>${heading}</h4>${items}</div>`;
+    })
+    .join("");
+
+  const levelLine = review.level ? `<div>Level: ${review.level}</div>` : "";
   detail.innerHTML = `
     <h4>${review.title || "Untitled Review"}</h4>
     <div>Type: ${review.review_type}</div>
-    <div>Level: ${review.level || "n/a"}</div>
-    <div>Domain: ${review.domain || "n/a"}</div>
-    <div>Method: ${review.method_family || "n/a"}</div>
+    ${levelLine}
     <div>Language: ${review.language || "en"}</div>
-    <h4>Sections</h4>
+    <h4>Section Index</h4>
+    <div class="hint">Used to anchor checklist quotes and validation.</div>
     <pre>${sections || "No sections yet."}</pre>
     <h4>Artifacts</h4>
-    <pre>${(data.artifacts || []).map((a) => `${a.kind}\\n${a.content}`).join("\\n\\n") || "No artifacts yet."}</pre>
+    ${artifactBlocks || "<p>No artifacts yet.</p>"}
   `;
 }
 
@@ -257,7 +548,7 @@ async function loadLiteratureQueries() {
   const runLiterature = document.getElementById("run-literature");
   if (runLiterature) {
     const selected = runLiterature.value;
-    runLiterature.innerHTML = `<option value="">No assessment</option>`;
+    runLiterature.innerHTML = `<option value="">No synthesis</option>`;
     data.forEach((query) => {
       const option = document.createElement("option");
       option.value = query.id;
@@ -294,22 +585,14 @@ async function loadLiteratureQueries() {
 async function loadLiteratureDetail(queryId) {
   state.selectedLiteratureId = queryId;
   const detail = document.getElementById("literature-detail");
-  const assessmentOutput = document.getElementById("literature-assessment-output");
   const worksOutput = document.getElementById("literature-works-output");
-  const existingProvider = detail.querySelector("#llm-provider")?.value || "";
-  const existingModel = detail.querySelector("#llm-model")?.value || "";
   const existingDocs = detail.querySelector("#llm-docs")?.value || "";
   const existingTokens = detail.querySelector("#llm-tokens")?.value || "";
   state.llmAssessmentState[queryId] = {
-    provider: existingProvider,
-    model: existingModel,
     maxDocs: existingDocs,
     tokenBudget: existingTokens,
   };
   detail.innerHTML = "";
-  if (assessmentOutput) {
-    assessmentOutput.innerHTML = "<p>Loading assessment...</p>";
-  }
   if (worksOutput) {
     worksOutput.innerHTML = "<p>Loading works...</p>";
   }
@@ -325,19 +608,13 @@ async function loadLiteratureDetail(queryId) {
   const actionRow = document.createElement("div");
   actionRow.className = "attach-row";
   actionRow.innerHTML = `
-    <button type="button" data-rebuild>Rebuild Assessment</button>
+    <button type="button" data-view>View Synthesis</button>
     <button type="button" data-delete class="button-secondary">Delete Query</button>
     <button type="button" data-cleanup class="button-secondary">Remove Books/Chapters</button>
   `;
-  const rebuildButton = actionRow.querySelector("[data-rebuild]");
-  rebuildButton.addEventListener("click", async () => {
-    try {
-      await fetchJSON(`/api/literature/queries/${queryId}/assessment`, { method: "POST" });
-      await loadLiteratureQueries();
-      await loadLiteratureDetail(queryId);
-    } catch (error) {
-      alert(error.message);
-    }
+  const viewButton = actionRow.querySelector("[data-view]");
+  viewButton.addEventListener("click", () => {
+    showSynthesisView();
   });
   const deleteButton = actionRow.querySelector("[data-delete]");
   deleteButton.addEventListener("click", async () => {
@@ -358,26 +635,7 @@ async function loadLiteratureDetail(queryId) {
   llmRow.className = "action-row llm-row";
   const llmButton = document.createElement("button");
   llmButton.type = "button";
-  llmButton.textContent = "Run LLM Assessment";
-  const providerSelect = document.createElement("select");
-  providerSelect.id = "llm-provider";
-  state.providers.forEach((provider) => {
-    const option = document.createElement("option");
-    option.value = provider.name;
-    option.textContent = provider.name;
-    providerSelect.appendChild(option);
-  });
-  const modelInput = document.createElement("input");
-  modelInput.type = "text";
-  modelInput.id = "llm-model";
-  modelInput.placeholder = state.providers[0]?.default_model || "Default";
-  providerSelect.addEventListener("change", () => {
-    const selected = state.providers.find((p) => p.name === providerSelect.value);
-    modelInput.placeholder = selected ? selected.default_model : "Default";
-    if (!modelInput.value && selected && selected.default_model) {
-      modelInput.value = selected.default_model;
-    }
-  });
+  llmButton.textContent = "Run Synthesis";
   const docInput = document.createElement("input");
   docInput.type = "number";
   docInput.min = "1";
@@ -394,10 +652,6 @@ async function loadLiteratureDetail(queryId) {
   tokenInput.id = "llm-tokens";
   const savedState = state.llmAssessmentState[queryId];
   if (savedState) {
-    if (savedState.provider) {
-      providerSelect.value = savedState.provider;
-    }
-    modelInput.value = savedState.model || "";
     if (savedState.maxDocs) {
       docInput.value = savedState.maxDocs;
     }
@@ -405,20 +659,25 @@ async function loadLiteratureDetail(queryId) {
       tokenInput.value = savedState.tokenBudget;
     }
   }
-  if (!modelInput.value && providerSelect.value) {
-    const selected = state.providers.find((p) => p.name === providerSelect.value);
-    if (selected && selected.default_model) {
-      modelInput.value = selected.default_model;
-    }
-  }
+  const llmMeta = document.createElement("div");
+  llmMeta.className = "hint";
+  const llmSettings = getLlmSettings();
+  llmMeta.textContent = llmSettings.provider
+    ? `Uses LLM: ${llmSettings.provider}${llmSettings.model ? ` (${llmSettings.model})` : ""}`
+    : "Select an LLM provider in Session Control.";
   llmButton.addEventListener("click", async () => {
-    if (!confirm("Run LLM assessment on available abstracts/full text?")) {
+    if (!confirm("Run LLM synthesis on available abstracts/full text?")) {
       return;
     }
     try {
+      const llm = getLlmSettings();
+      if (!llm.provider) {
+        alert("Select an LLM provider in Session Control.");
+        return;
+      }
       const payload = {
-        provider: providerSelect.value,
-        model: modelInput.value || null,
+        provider: llm.provider,
+        model: llm.model || null,
         max_docs: parseInt(docInput.value, 10) || 8,
         max_tokens_budget: parseInt(tokenInput.value, 10) || 100000,
       };
@@ -432,25 +691,20 @@ async function loadLiteratureDetail(queryId) {
     }
   });
   llmRow.appendChild(llmButton);
-  llmRow.appendChild(providerSelect);
-  llmRow.appendChild(modelInput);
   llmRow.appendChild(docInput);
   llmRow.appendChild(tokenInput);
+  llmRow.appendChild(llmMeta);
   detail.appendChild(llmRow);
 
-  [providerSelect, modelInput, docInput, tokenInput].forEach((field) => {
+  [docInput, tokenInput].forEach((field) => {
     field.addEventListener("input", () => {
       state.llmAssessmentState[queryId] = {
-        provider: providerSelect.value,
-        model: modelInput.value,
         maxDocs: docInput.value,
         tokenBudget: tokenInput.value,
       };
     });
     field.addEventListener("change", () => {
       state.llmAssessmentState[queryId] = {
-        provider: providerSelect.value,
-        model: modelInput.value,
         maxDocs: docInput.value,
         tokenBudget: tokenInput.value,
       };
@@ -470,13 +724,11 @@ async function loadLiteratureDetail(queryId) {
     }
   });
 
-  if (assessmentOutput) {
-    if (data.assessment) {
-      assessmentOutput.innerHTML = `<h4>Assessment</h4><pre>${data.assessment}</pre>`;
-    } else {
-      assessmentOutput.innerHTML = "<p>No assessment loaded.</p>";
-    }
-  }
+  state.synthesisCache = {
+    queryId: data.query.id,
+    title: data.query.query,
+    content: data.assessment || "",
+  };
 
   if (worksOutput) {
     if (data.works.length) {
@@ -578,14 +830,11 @@ function clearLiteratureDetail() {
   if (detail) {
     detail.innerHTML = "<p>No query selected.</p>";
   }
-  const assessmentOutput = document.getElementById("literature-assessment-output");
-  if (assessmentOutput) {
-    assessmentOutput.innerHTML = "<p>No assessment loaded.</p>";
-  }
   const worksOutput = document.getElementById("literature-works-output");
   if (worksOutput) {
     worksOutput.innerHTML = "<p>No works loaded.</p>";
   }
+  state.synthesisCache = { queryId: null, title: "", content: "" };
 }
 
 async function loadLocalPdfs(queryId) {
@@ -849,20 +1098,65 @@ function renderCouncilMemos(memos, container) {
   });
 }
 
+function captureLlmSettings() {
+  const provider = document.getElementById("global-provider");
+  const model = document.getElementById("global-model");
+  if (!provider || !model) {
+    return;
+  }
+  state.llmSettings = {
+    provider: provider.value,
+    model: model.value,
+  };
+}
+
+function saveLlmSettings() {
+  try {
+    localStorage.setItem("llmSettings", JSON.stringify(state.llmSettings));
+  } catch (error) {
+    console.warn("Could not save LLM settings", error);
+  }
+}
+
+function loadLlmSettings() {
+  try {
+    const raw = localStorage.getItem("llmSettings");
+    if (raw) {
+      state.llmSettings = JSON.parse(raw);
+    }
+  } catch (error) {
+    console.warn("Could not load LLM settings", error);
+  }
+}
+
+function restoreLlmSettings() {
+  const provider = document.getElementById("global-provider");
+  const model = document.getElementById("global-model");
+  if (!provider || !model) {
+    return;
+  }
+  if (state.llmSettings.provider) {
+    provider.value = state.llmSettings.provider;
+  }
+  model.value = state.llmSettings.model || "";
+}
+
+function getLlmSettings() {
+  const provider = document.getElementById("global-provider")?.value || "";
+  const model = document.getElementById("global-model")?.value || "";
+  return { provider, model };
+}
+
 function captureRunFormState() {
-  const runProvider = document.getElementById("run-provider");
-  const runModel = document.getElementById("run-model");
   const ideaCount = document.getElementById("idea-count");
   const topicFocus = document.getElementById("topic-focus");
   const topicExclude = document.getElementById("topic-exclude");
   const literatureQuery = document.getElementById("run-literature");
   const useAssessmentSeeds = document.getElementById("use-assessment-seeds");
-  if (!runProvider || !runModel || !ideaCount || !topicFocus || !topicExclude || !literatureQuery || !useAssessmentSeeds) {
+  if (!ideaCount || !topicFocus || !topicExclude || !literatureQuery || !useAssessmentSeeds) {
     return;
   }
   state.runFormState = {
-    provider: runProvider.value,
-    model: runModel.value,
     ideaCount: ideaCount.value,
     topicFocus: topicFocus.value,
     topicExclude: topicExclude.value,
@@ -891,20 +1185,14 @@ function loadRunFormState() {
 }
 
 function restoreRunFormState() {
-  const runProvider = document.getElementById("run-provider");
-  const runModel = document.getElementById("run-model");
   const ideaCount = document.getElementById("idea-count");
   const topicFocus = document.getElementById("topic-focus");
   const topicExclude = document.getElementById("topic-exclude");
   const literatureQuery = document.getElementById("run-literature");
   const useAssessmentSeeds = document.getElementById("use-assessment-seeds");
-  if (!runProvider || !runModel || !ideaCount || !topicFocus || !topicExclude || !literatureQuery || !useAssessmentSeeds) {
+  if (!ideaCount || !topicFocus || !topicExclude || !literatureQuery || !useAssessmentSeeds) {
     return;
   }
-  if (state.runFormState.provider) {
-    runProvider.value = state.runFormState.provider;
-  }
-  runModel.value = state.runFormState.model;
   if (state.runFormState.ideaCount) {
     ideaCount.value = state.runFormState.ideaCount;
   }
@@ -981,14 +1269,19 @@ function wireForms() {
 
   document.getElementById("run-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const provider = document.getElementById("run-provider").value;
-    const model = document.getElementById("run-model").value;
+    const llm = getLlmSettings();
+    const provider = llm.provider;
+    const model = llm.model;
     const ideaCount = parseInt(document.getElementById("idea-count").value, 10);
     const topicFocus = document.getElementById("topic-focus").value;
     const topicExclude = document.getElementById("topic-exclude").value;
     const literatureQueryId = document.getElementById("run-literature").value;
     const useAssessmentSeeds = document.getElementById("use-assessment-seeds").value === "yes";
     const message = document.getElementById("run-message");
+    if (!provider) {
+      message.textContent = "Select an LLM provider in Session Control.";
+      return;
+    }
     try {
       const result = await fetchJSON("/api/runs", {
         method: "POST",
@@ -1061,131 +1354,156 @@ function wireForms() {
     updateReviewLevelVisibility();
     const typeSelect = document.getElementById("review-type");
     typeSelect.addEventListener("change", updateReviewLevelVisibility);
-    const attachButton = document.getElementById("review-attach");
-    const runButton = document.getElementById("review-run");
-    const uploadButton = document.getElementById("review-upload");
 
     reviewForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const message = document.getElementById("review-message");
+      const runButton = document.getElementById("review-run");
+      const originalRunLabel = runButton ? runButton.textContent : "";
       message.textContent = "";
       const reviewType = document.getElementById("review-type").value;
       const level = document.getElementById("review-level").value;
       const title = document.getElementById("review-title").value;
-      const domain = document.getElementById("review-domain").value;
-      const method = document.getElementById("review-method").value;
       const language = document.getElementById("review-language").value;
+      const fileInput = document.getElementById("review-pdf-upload");
+      const file = fileInput ? fileInput.files[0] : null;
+      const personas = [
+        document.getElementById("review-persona-1")?.value,
+        document.getElementById("review-persona-2")?.value,
+        document.getElementById("review-persona-3")?.value,
+      ].filter(Boolean);
+      const duplicates = personas.filter((persona, index) => personas.indexOf(persona) !== index);
+      if (duplicates.length) {
+        const labels = [...new Set(duplicates)].map(formatPersonaLabel).join(", ");
+        const confirmed = confirm(
+          `You selected the same persona more than once (${labels}). Run duplicate personas anyway?`
+        );
+        if (!confirmed) {
+          return;
+        }
+      }
 
-      const payload = {
-        review_type: reviewType,
-        title: title || null,
-        domain: domain || null,
-        method_family: method || null,
-        language: language || "en",
-      };
-      if (reviewType === "project") {
-        payload.level = level;
+      const llm = getLlmSettings();
+      const provider = llm.provider;
+      const model = llm.model;
+      if (!provider) {
+        message.textContent = "Select an LLM provider in Session Control.";
+        return;
+      }
+
+      if (runButton) {
+        runButton.disabled = true;
+        runButton.textContent = "Running review...";
+      }
+      message.textContent = "Running review...";
+
+      let reviewId = state.selectedReviewId;
+      if (!reviewId) {
+        if (!file) {
+          message.textContent = "Choose a PDF to run the review.";
+          if (runButton) {
+            runButton.disabled = false;
+            runButton.textContent = originalRunLabel;
+          }
+          return;
+        }
+        const payload = {
+          review_type: reviewType,
+          title: title || null,
+          language: language || "en",
+        };
+        if (reviewType === "project") {
+          payload.level = level;
+        }
+        try {
+          const result = await fetchJSON("/api/reviews", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+          reviewId = result.review_id;
+          state.selectedReviewId = reviewId;
+          await loadReviews();
+        } catch (error) {
+          message.textContent = error.message;
+          if (runButton) {
+            runButton.disabled = false;
+            runButton.textContent = originalRunLabel;
+          }
+          return;
+        }
+      }
+
+      if (file) {
+        try {
+          await uploadFile(`/api/reviews/${reviewId}/upload-pdf`, file);
+        } catch (error) {
+          message.textContent = error.message;
+          if (runButton) {
+            runButton.disabled = false;
+            runButton.textContent = originalRunLabel;
+          }
+          return;
+        }
+      } else {
+        try {
+          const detail = await fetchJSON(`/api/reviews/${reviewId}`);
+          if (!detail.sections || detail.sections.length === 0) {
+            message.textContent = "Upload a PDF to index sections before running.";
+            if (runButton) {
+              runButton.disabled = false;
+              runButton.textContent = originalRunLabel;
+            }
+            return;
+          }
+        } catch (error) {
+          message.textContent = error.message;
+          if (runButton) {
+            runButton.disabled = false;
+            runButton.textContent = originalRunLabel;
+          }
+          return;
+        }
       }
 
       try {
-        await fetchJSON("/api/reviews", {
+        await fetchJSON(`/api/reviews/${reviewId}/run`, {
           method: "POST",
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            provider,
+            model: model || null,
+            personas,
+          }),
         });
-        message.textContent = "Review created.";
-        await loadReviews();
+        message.textContent = "Review completed.";
+        await loadReviewDetail(reviewId);
       } catch (error) {
         message.textContent = error.message;
+      } finally {
+        if (runButton) {
+          runButton.disabled = false;
+          runButton.textContent = originalRunLabel;
+        }
       }
     });
-
-    if (attachButton) {
-      attachButton.addEventListener("click", async () => {
-        const message = document.getElementById("review-message");
-        message.textContent = "";
-        if (!state.selectedReviewId) {
-          message.textContent = "Select a review first.";
-          return;
-        }
-        const filename = document.getElementById("review-pdf").value;
-        if (!filename) {
-          message.textContent = "Provide a PDF filename.";
-          return;
-        }
-        try {
-          await fetchJSON(`/api/reviews/${state.selectedReviewId}/attach-pdf`, {
-            method: "POST",
-            body: JSON.stringify({ filename }),
-          });
-          message.textContent = "PDF attached and sections indexed.";
-          await loadReviewDetail(state.selectedReviewId);
-        } catch (error) {
-          message.textContent = error.message;
-        }
-      });
-    }
-
-    if (uploadButton) {
-      uploadButton.addEventListener("click", async () => {
-        const message = document.getElementById("review-message");
-        message.textContent = "";
-        if (!state.selectedReviewId) {
-          message.textContent = "Select a review first.";
-          return;
-        }
-        const fileInput = document.getElementById("review-pdf-upload");
-        const file = fileInput.files[0];
-        if (!file) {
-          message.textContent = "Choose a PDF to upload.";
-          return;
-        }
-        try {
-          const result = await uploadFile(
-            `/api/reviews/${state.selectedReviewId}/upload-pdf`,
-            file,
-          );
-          document.getElementById("review-pdf").value = result.filename;
-          message.textContent = "PDF uploaded. Now attach to index sections.";
-        } catch (error) {
-          message.textContent = error.message;
-        }
-      });
-    }
-
-    if (runButton) {
-      runButton.addEventListener("click", async () => {
-        const message = document.getElementById("review-message");
-        message.textContent = "";
-        if (!state.selectedReviewId) {
-          message.textContent = "Select a review first.";
-          return;
-        }
-        const provider = document.getElementById("review-provider").value;
-        const model = document.getElementById("review-model").value;
-        try {
-          await fetchJSON(`/api/reviews/${state.selectedReviewId}/run`, {
-            method: "POST",
-            body: JSON.stringify({
-              provider,
-              model: model || null,
-            }),
-          });
-          message.textContent = "Review completed.";
-          await loadReviewDetail(state.selectedReviewId);
-        } catch (error) {
-          message.textContent = error.message;
-        }
-      });
-    }
   }
 
-  ["run-provider", "run-model", "idea-count", "topic-focus", "topic-exclude", "run-literature", "use-assessment-seeds"].forEach((id) => {
+  ["idea-count", "topic-focus", "topic-exclude", "run-literature", "use-assessment-seeds"].forEach((id) => {
     const field = document.getElementById(id);
     if (field) {
       field.addEventListener("input", captureRunFormState);
       field.addEventListener("change", captureRunFormState);
       field.addEventListener("input", saveRunFormState);
       field.addEventListener("change", saveRunFormState);
+    }
+  });
+
+  ["global-provider", "global-model"].forEach((id) => {
+    const field = document.getElementById(id);
+    if (field) {
+      field.addEventListener("input", captureLlmSettings);
+      field.addEventListener("change", captureLlmSettings);
+      field.addEventListener("input", saveLlmSettings);
+      field.addEventListener("change", saveLlmSettings);
     }
   });
 }
@@ -1213,11 +1531,14 @@ async function refreshLoop() {
 }
 
 async function init() {
+  loadLlmSettings();
   await loadProviders();
   await loadCredentials();
   loadRunFormState();
+  restoreLlmSettings();
   restoreRunFormState();
   wireForms();
+  initModeSwitcher();
   await refreshLoop();
 }
 

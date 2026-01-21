@@ -3,6 +3,7 @@ import shutil
 import unittest
 
 from fastapi.testclient import TestClient
+from pypdf import PdfWriter
 
 from app.db import create_db_and_tables, engine
 from app.main import app, BASE_DIR
@@ -25,7 +26,11 @@ class ReviewUploadTest(unittest.TestCase):
             shutil.rmtree(review_dir, ignore_errors=True)
 
     def test_upload_pdf(self) -> None:
-        file_content = b"%PDF-1.4\n%Test\n"
+        writer = PdfWriter()
+        writer.add_blank_page(width=200, height=200)
+        buffer = io.BytesIO()
+        writer.write(buffer)
+        file_content = buffer.getvalue()
         response = self.client.post(
             f"/api/reviews/{self.review_id}/upload-pdf",
             files={"file": ("paper.pdf", io.BytesIO(file_content), "application/pdf")},
