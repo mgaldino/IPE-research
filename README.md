@@ -24,11 +24,13 @@ pip install -r requirements.txt
 ```
 
 ## One-click local start (recommended)
-Download the repo (ZIP) and double-click:
-- Windows: `Start-App.cmd`
-- macOS: `Start-App.command`
+1) Download the repo (ZIP) and extract it.
+2) Ensure Python is installed (Windows: check “Add Python to PATH”).
+3) Double-click:
+   - Windows: `Start-App.cmd`
+   - macOS: `Start-App.command`
 
-Prerequisite: Python must be installed and on PATH.
+Then open: http://127.0.0.1:8001/
 
 ## Run the server
 ```bash
