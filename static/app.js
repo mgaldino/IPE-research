@@ -203,6 +203,30 @@ function initModeSwitcher() {
   setMode(saved || "select");
 }
 
+function initHelpToggle() {
+  const container = document.getElementById("provider-help");
+  if (!container) {
+    return;
+  }
+  const buttons = Array.from(container.querySelectorAll("[data-help-lang]"));
+  const bodies = Array.from(container.querySelectorAll("[data-help-content]"));
+  const setLang = (lang) => {
+    const selected = bodies.some((body) => body.dataset.helpContent === lang) ? lang : "en";
+    bodies.forEach((body) => {
+      body.hidden = body.dataset.helpContent !== selected;
+    });
+    buttons.forEach((button) => {
+      button.classList.toggle("is-active", button.dataset.helpLang === selected);
+    });
+    localStorage.setItem("codexcouncil-help-lang", selected);
+  };
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => setLang(button.dataset.helpLang));
+  });
+  const stored = localStorage.getItem("codexcouncil-help-lang");
+  setLang(stored || "en");
+}
+
 async function fetchJSON(url, options = {}) {
   const response = await fetch(url, {
     headers: { "Content-Type": "application/json" },
@@ -1539,6 +1563,7 @@ async function init() {
   restoreRunFormState();
   wireForms();
   initModeSwitcher();
+  initHelpToggle();
   await refreshLoop();
 }
 

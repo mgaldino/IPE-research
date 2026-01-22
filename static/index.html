@@ -124,6 +124,35 @@
               <button type="submit">Save</button>
             </form>
             <div id="credential-list" class="list"></div>
+            <div id="provider-help" class="detail dashed-subtle provider-help">
+              <div class="help-header">
+                <div class="eyebrow">API key help</div>
+                <div class="help-toggle">
+                  <button type="button" class="button-secondary button-small is-active" data-help-lang="en">EN</button>
+                  <button type="button" class="button-secondary button-small" data-help-lang="pt">PT</button>
+                </div>
+              </div>
+              <div class="help-body" data-help-content="en">
+                <p>You need an API key from one provider to run reviews and idea generation.</p>
+                <ol class="help-list">
+                  <li>OpenAI: create a key at https://platform.openai.com/api-keys</li>
+                  <li>Anthropic: create a key at https://console.anthropic.com/settings/keys</li>
+                  <li>Gemini (Google AI Studio): create a key at https://aistudio.google.com/app/apikey</li>
+                  <li>Paste the key in Provider Vault and click Save.</li>
+                </ol>
+                <div class="hint">Keys are stored encrypted locally.</div>
+              </div>
+              <div class="help-body" data-help-content="pt" hidden>
+                <p>Voce precisa de uma API key de um provedor para rodar reviews e ideias.</p>
+                <ol class="help-list">
+                  <li>OpenAI: crie a key em https://platform.openai.com/api-keys</li>
+                  <li>Anthropic: crie a key em https://console.anthropic.com/settings/keys</li>
+                  <li>Gemini (Google AI Studio): crie a key em https://aistudio.google.com/app/apikey</li>
+                  <li>Cole a key no Provider Vault e clique em Save.</li>
+                </ol>
+                <div class="hint">As keys sao armazenadas criptografadas localmente.</div>
+              </div>
+            </div>
           </section>
 
           <section class="panel panel--review" data-mode="review-paper review-project">
