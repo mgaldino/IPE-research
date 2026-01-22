@@ -12,6 +12,11 @@ Local web app to orchestrate a swarm of AI agents that generate, vet, and packag
 - Review PDF ingestion with section indexing and grounding
 - LLM-driven review generation with validation notes when formatting breaks
 
+## Screenshots
+![Landing page](assets/screenshots/landpage-screenshot1.png)
+![Paper review](assets/screenshots/paper-screenshot2.png)
+![Paper review detail](assets/screenshots/paper-screenshot3.png)
+
 ## Requirements
 - Python 3.11+
 - A local virtualenv (recommended)
