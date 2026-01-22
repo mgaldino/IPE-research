@@ -23,6 +23,13 @@ python3 -m venv .venv
 pip install -r requirements.txt
 ```
 
+## One-click local start (recommended)
+Download the repo (ZIP) and double-click:
+- Windows: `Start-App.cmd`
+- macOS: `Start-App.command`
+
+Prerequisite: Python must be installed and on PATH.
+
 ## Run the server
 ```bash
 . .venv/bin/activate

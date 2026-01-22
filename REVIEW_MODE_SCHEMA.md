@@ -36,6 +36,7 @@ For each selected persona (3 total):
    - Persona-focused assessment (based on persona guidance)
    - Verdict (reject / revise / major revise)
    - Overall score (X/10)
+   - Must explicitly label the reviewer persona in the memo
 
 2) **Revision Checklist**
    - Major issues (3 items)

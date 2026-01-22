@@ -5,7 +5,7 @@
 ## Mission Snapshot
 - Local web app for IPE idea generation + APSR-level review of papers/projects.
 - Design-only: no estimation, no data scraping, no claimed results.
-- Output: structured dossiers, council memos, and grounded review checklists.
+- Output: structured dossiers, council memos, and grounded multi-persona review checklists.
 
 ---
 
@@ -13,7 +13,7 @@
 - Idea swarm: PITCH/DESIGN/DATA_PLAN/POSITIONING/NEXT_STEPS + gate workflow.
 - Council review: memos, resubmissions, gate auto-recompute, version snapshots.
 - Literature pipeline: metadata fetch, PDF ingest, assessments, LLM summaries.
-- Review mode v1: paper/project reviews with PDF upload + section indexing.
+- Review mode v2: paper/project reviews with persona selection + section indexing.
 - LLM review run with validation warnings for format/grounding breaks.
 - Language toggle (EN/PT) for review output.
 - Evaluation harness (offline validation runner + fixtures).
@@ -24,8 +24,8 @@
 - Two review tracks: paper vs project (IC/Mestrado/Doutorado/Research Grant).
 - PDF ingestion -> section IDs + excerpts for grounding.
 - Outputs:
-  - Referee Memo (350–500 words, APSR-style, score + verdict).
-  - Revision Checklist (3 major + 3 minor; Quote line required for minors).
+  - 3 Referee Memos (persona-based, APSR-style, score + verdict).
+  - 3 Revision Checklists (3 major + 3 minor; Quote line required for minors).
 - Validation notes appended when format rules break.
 
 ---
@@ -47,9 +47,8 @@
 
 ## Current UX (Working State)
 - Two-column operational dashboard.
-- Review Studio + Review Archive.
+- Review Studio + Review Archive + full-width Review Detail panel.
 - Idea Dossier now collapsible for large sections (Pitch/Data/Positioning/Next Steps).
-- Known issue: UI density/complexity needs rethinking.
 
 ---
 
@@ -57,7 +56,7 @@
 - Expand `DATA_CATALOG.md` with standards + sources.
 - UI filters for literature (journal/source/type) and export missing PDFs.
 - PI decision logging in `DECISIONS.md` + UI shortcuts.
-- Assessment source indicator (heuristic vs LLM) + timestamp.
+- Review archive capped to recent items for focus.
 - Tighten council scoring compliance (full rubric coverage).
 - Expand review harness with 15–30 real artifacts.
 

@@ -33,8 +33,9 @@ For each candidate idea, the app must produce a structured “idea dossier” co
 7) **Next-step checklist for the PI** (what to do to execute later, if chosen).
 
 For each review (paper or project; IC/Mestrado/Doutorado/Research Grant levels), the app must produce:
-1) **Referee Memo** (APSR-level, 350–500 words) with summary, contribution assessment, design/evidence assessment (when empirical), verdict, and overall score.
-2) **Revision Checklist** with 3 major and 3 minor issues, grounded to section IDs; minors must include quotes labeled `Quote:`.
+1) **Three Referee Memos** (APSR-level, 350–500 words), one per persona, each with summary, persona-focused assessment, verdict, and overall score.
+2) **Three Revision Checklists**, one per persona, with 3 major and 3 minor issues, grounded to section IDs; minors must include quotes labeled `Quote:`.
+Personas are selected by the user (duplicates allowed with confirmation).
 
 ---
 
@@ -201,8 +202,8 @@ Per idea dossier:
 - `ideas/<idea_id>/NEXT_STEPS.md`
 
 Per review dossier:
-- `reviews/<review_id>/REFEREE_MEMO.md`
-- `reviews/<review_id>/REVISION_CHECKLIST.md`
+- `reviews/<review_id>/REFEREE_MEMO__S<slot>__<persona>.md`
+- `reviews/<review_id>/REVISION_CHECKLIST__S<slot>__<persona>.md`
 
 ---
 
@@ -403,9 +404,7 @@ If novelty cannot be articulated, tag `incremental` and deprioritize.
 ### 10.6 Review artifacts
 **Referee Memo (paper/project)**
 - Summary (2–3 sentences)
-- Contribution + novelty assessment
-- Design/ID assessment (if empirical)
-- Evidence/measurement assessment (if empirical)
+- Persona-focused assessment (follow persona guidance)
 - Verdict (reject / major revise / revise)
 - Overall score (X/10)
 
@@ -457,10 +456,11 @@ For each idea, the browser UI must show:
 - Tags: topic, design family, data dependency, novelty lane, risk level
 
 For each review, the browser UI must show:
-- Review metadata (type, level, domain, method family)
+- Review metadata (type, level)
 - Language selection (EN/PT)
+- Persona selection (3 reviewers)
 - Section index (IDs + excerpts)
-- Referee Memo + Revision Checklist
+- Referee Memos + Revision Checklists (per persona)
 - Validation warnings when formatting fails
 
 The orchestration layer must enforce gates (no skipping without PI override).

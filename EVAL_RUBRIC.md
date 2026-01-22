@@ -3,7 +3,7 @@
 Council scoring rubric, thresholds, veto rules.
 
 ## Review mode scoring (paper/project)
-Use a single overall score (X/10) aligned with APSR-level expectations.
+Each persona issues its own overall score (X/10) aligned with APSR-level expectations.
 Score anchors:
 - 9-10: field-shaping contribution, clear logic, credible design/evidence, minimal revisions.
 - 7-8: strong, publishable with major revisions; clear contribution and defensible design.
@@ -16,6 +16,7 @@ Verdict mapping:
 - 5-7: Major Revise
 - 1-4: Reject
 Review mode is method-agnostic and does not require breakthrough-level contributions; lane and breakthrough fields do not apply.
+Persona-specific scope should be respected; cross-domain critiques only when fatal to core claims.
 
 ## Scoring scale (1-10)
 - 9-10: field-shaping, credible design, unusually clear stakes

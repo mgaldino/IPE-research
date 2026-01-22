@@ -1,21 +1,21 @@
-# 90-Day Plan: Review Mode v1 (IPE-only) + Grounding
+# 90-Day Plan: Review Mode v2 (IPE-only) + Persona Grounding
 
-Status: Review mode v1 delivered (paper/project, PDF ingestion, grounded artifacts, LLM run, validation warnings). Remaining items focus on evaluation harness, UI PDF upload, and stricter output enforcement.
+Status: Review mode v2 delivered (paper/project, PDF ingestion, persona-based reviews, grounded artifacts, LLM run, validation warnings). Remaining items focus on evaluation harness and stricter output enforcement.
 
 Goal: Ship a trusted Review mode within the existing app, without building domain-pack infrastructure yet.
 Success is measured by concrete improvements in review quality and traceability, not by breadth.
 
 ## Month 1 — Review v1 in IPE (minimal scope)
-Milestone: Review mode workflow live, using current council personas and no-execution constraints (method-agnostic review).
+Milestone: Review mode workflow live with persona-based reviews and no-execution constraints (method-agnostic review).
 
 Key deliverables:
 - Review workflow (UI + API) parallel to Ideation workflow.
-- Input: PDF + optional metadata (target journal tier, contribution type, method).
+- Input: PDF + review type + language + persona selection (3 reviewers).
 - Support review types:
   - Paper: single standard, journal-style referee report.
 - Project: IC / Mestrado / Doutorado / Research Grant expectations.
-- Output: “Referee Memo + Revision Checklist” artifact with a fixed template.
-- Gate logic for Review mode (basic pass/fail + scores).
+- Output: 3 persona-based “Referee Memo + Revision Checklist” artifacts with a fixed template.
+- Validation-only enforcement (format + grounding), no gate system.
 
 Success criteria:
 - Users can submit a paper and receive a structured review in one flow.

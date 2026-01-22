@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-01-21
+- Added multi-persona review pipeline (3 reviewers per run) with persona selection and duplicate confirmation.
+- Grouped review artifacts by persona/slot and labeled memos with reviewer persona.
+- Simplified review workflow into a single “Run Review” CTA with auto-indexing.
+- Added full-width Review Detail panel and capped Review Archive to latest items.
+- Added global LLM provider/model settings shared across workflows.
+- Added one-click local launchers for macOS and Windows.
+
 ## 2026-01-16
 - Added review mode (paper/project) with PDF ingestion, section indexing, and grounded artifacts.
 - Added LLM review run with APSR-level prompts and validation warnings.

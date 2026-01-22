@@ -19,8 +19,8 @@ Active work queue and checkpoints.
 - UI improvements: persistent run form state, LLM assessment controls, full-width works/assessment layout.
 - Provider connectivity testing and model normalization (Gemini/OpenAI).
 - Core refactor: mode-aware prompts, migration table, artifact writers.
-- Review mode v1: paper/project reviews, PDF ingestion, section indexing.
-- Review artifacts: grounded memo/checklist, LLM run, validation warnings in UI.
+- Review mode v2: paper/project reviews, persona selection, PDF ingestion, section indexing.
+- Review artifacts: persona-based memo/checklist sets, LLM run, validation warnings in UI.
 - Review PDF upload in UI (multipart).
 - Review language toggle (EN/PT) and localized placeholders.
 - Review evaluation harness (offline validation runner + fixtures).
@@ -34,7 +34,7 @@ Active work queue and checkpoints.
 - Expand DATA_CATALOG.md with concrete standards and sources.
 - Add UI filters for journal/source/type and export lists of missing PDFs.
 - Add PI decision logging in DECISIONS.md and UI shortcuts.
-- Add UI indicator for assessment source (heuristic vs LLM) and last-run timestamp.
+- Add UI indicator for assessment freshness (last-run timestamp).
 - Tighten council scoring compliance (full rubric coverage and more conservative scoring).
 - Build out the evaluation harness with 15–30 real artifacts and rubric-based regression checks.
 - Enforce exact 3 major + 3 minor counts in Review output.
