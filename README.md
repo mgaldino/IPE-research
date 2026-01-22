@@ -13,8 +13,13 @@ Local web app to orchestrate a swarm of AI agents that generate, vet, and packag
 - LLM-driven review generation with validation notes when formatting breaks
 
 ## Screenshots
+Landing page: choose a workflow among Idea Lab, Paper Review, and Project Review.
 ![Landing page](assets/screenshots/landpage-screenshot1.png)
-![Paper review](assets/screenshots/paper-screenshot2.png)
+
+Paper Review workflow (APSR-level): set reviewers, upload a PDF, and run the review.
+![Paper review workflow](assets/screenshots/paper-screenshot2.png)
+
+Paper Review detail: reviewer outputs and artifacts after the run completes.
 ![Paper review detail](assets/screenshots/paper-screenshot3.png)
 
 ## Requirements
