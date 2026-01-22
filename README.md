@@ -26,9 +26,10 @@ pip install -r requirements.txt
 ## One-click local start (recommended)
 1) Download the repo (ZIP) and extract it.
 2) Ensure Python is installed (Windows: check “Add Python to PATH”).
-3) Double-click:
+3) Double-click (or run):
    - Windows: `Start-App.cmd`
    - macOS: `Start-App.command`
+   - Linux: `Start-App.sh`
 
 Then open: http://127.0.0.1:8001/
 

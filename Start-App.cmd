@@ -13,6 +13,7 @@ echo Installing dependencies...
 if errorlevel 1 goto :error
 
 echo Starting app...
+start "" "http://127.0.0.1:8001/"
 ".venv\\Scripts\\python.exe" -m app
 goto :eof
 
